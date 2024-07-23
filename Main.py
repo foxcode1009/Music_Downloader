@@ -2,6 +2,7 @@ from pytubefix import YouTube
 import requests
 import os
 import flet
+import time
 
 from flet import(
     Container,
@@ -27,23 +28,29 @@ from flet import(
     AlertDialog,
     TextButton,
     MainAxisAlignment,
-    ButtonStyle
+    ButtonStyle,
+    ProgressBar
 )
 
 class Cancion:
 
 
     def __init__(self, link):
+
         self.link = link
         self.author = ""
         self.end_time = ""
         self.title = ""
         self.miniatura_path = ""
+        self.register_progress = int()
+
+        print(f"- en contructor: {self.register_progress}")
 
     def download_song_only_audio(self):
         
-        yt = YouTube(self.link)
+        yt = YouTube(self.link, on_progress_callback=self.progres)
         tittle = yt.title
+        print(f"- en download: {self.register_progress}")
 
         audio = yt.streams.get_audio_only()
         file_path = os.path.expanduser("~\\Music")
@@ -51,6 +58,16 @@ class Cancion:
         final_path = os.path.join(file_path)
         print(final_path)
         audio.download(output_path=final_path)
+
+
+    def progres(self, stream, chunk, bytes_remaining):
+
+        total_size = stream.filesize
+        print(f"- tamaño total: {total_size}")
+        bytes_downloades = total_size - bytes_remaining
+        print(f"- bytes restantes: {bytes_downloades}")
+        self.register_progress = bytes_downloades / total_size * 100
+        print(f"- progreso: {self.register_progress}")
 
     def song_info(self):
 
@@ -219,6 +236,29 @@ class Dowloader_app:
     def download_song(self, e):
         print("ingresando a la funcion")
 
+        progressbar = ProgressBar(width=300)
+        progressbar.visible = False
+        progressbar.value = 0
+
+        num_progress = Text(
+            selectable=True,
+            weight=FontWeight.W_500,
+            color="black",
+            size=14
+        )
+
+        def progress(num):
+            print("- Ingresando a progressbar")
+            num_1 = int(num)
+            progressbar.visible = True
+
+            for i in range(0, num_1):
+                print(f"bucle dentro de progres {i}")
+                progressbar.value = i*0.01
+                num_progress.value = f"{i}%"
+                time.sleep(0.1)
+                self.page.update()
+
         if not self.input_text.value and self.file_type and self.resolution.value:
             print("espacios vacios ingrese un  link")
 
@@ -280,6 +320,7 @@ class Dowloader_app:
                                         ),
                                     ),
                                     Row(
+                                        spacing=30,
                                         controls=[
                                                 Text(
                                                     value=dowloader.author,
@@ -294,8 +335,10 @@ class Dowloader_app:
                                                     weight=FontWeight.W_500,
                                                     color="black",
                                                     size=14
-                                                )
-                                            ]
+                                                ),
+                                                progressbar,
+                                                num_progress
+                                            ],
                                         )
                                 ]
                                 ),
@@ -306,13 +349,13 @@ class Dowloader_app:
                                     expand=True,
                                     content=Row(
                                     controls=[
-                                                IconButton(icons.PLAY_CIRCLE_OUTLINE)
+                                                IconButton(icons.PLAY_CIRCLE_OUTLINE),
+                                                Column(width=10)
                                             ],
                                             alignment=flet.MainAxisAlignment.END
                                                 )
                                             )
                                         ],
-                                    # alignment=flet.MainAxisAlignment.SPACE_AROUND
                                         )
                                     ),
                                 bgcolor="white", # #1CBF1A
@@ -330,6 +373,9 @@ class Dowloader_app:
                     if dowloader.title and dowloader.author and dowloader.end_time:
                         try:
                             dowloader.download_song_only_audio()
+                            print(f"- antes de la funcion registo {dowloader.register_progress}")
+                            progress(dowloader.register_progress)
+                            print(f"- despues de la funcion registo {dowloader.register_progress}")
                         except TypeError:
                             print(TypeError)
                             # self.open_dialog("Link provied error")
