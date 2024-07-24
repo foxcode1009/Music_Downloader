@@ -304,7 +304,7 @@ class Dowloader_app:
                                 controls=[
                                     Container(
                                     # height=160,
-                                    bgcolor="red",
+                                    bgcolor="white",
                                     width=155,
                                     height=95,
                                     content=Image(
@@ -375,7 +375,7 @@ class Dowloader_app:
                                 shadow=BoxShadow(
                                         spread_radius=1,
                                         blur_radius=3,
-                                        offset=Offset(-5, 8),
+                                        offset=Offset(-8, 8),
                                         blur_style=ShadowBlurStyle.NORMAL,
                                         color="#084107"
                                         )
