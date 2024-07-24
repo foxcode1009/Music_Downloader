@@ -32,6 +32,7 @@ from flet import(
     ProgressBar
 )
 
+# clase de la cancion, recive un atributo que es el link
 class Cancion:
 
 
@@ -42,76 +43,78 @@ class Cancion:
         self.end_time = ""
         self.title = ""
         self.miniatura_path = ""
-        self.register_progress = int()
-        self.confirm_download = False
 
+        # funcion para descargar el audio
     def download_song_only_audio(self):
         
-        yt = YouTube(self.link, on_progress_callback=self.progres)
-        print(f"- antes download: {self.register_progress}")
+        yt = YouTube(self.link)
 
+        # obtener la mejor resolucion
         audio = yt.streams.get_audio_only()
+
+        # ruta donde se guardara la cancion
         file_path = os.path.expanduser("~\\Music")
-        print(file_path)
+
+        # descargar la cancion 
         audio.download(output_path=file_path)
-        # bar.value = self.register_progress
-        # print(f"despues del download: {self.register_progress}")
 
-
-    def progres(self, stream, chunk, bytes_remaining):
-
-        total_size = stream.filesize
-        print(f"- tamaño total: {total_size}")
-        bytes_downloades = total_size - bytes_remaining
-        print(f"- bytes restantes: {bytes_downloades}")
-        self.register_progress = bytes_downloades / total_size * 100
-        print(f"- progreso: {self.register_progress}")
-
+    # funcion para descargar el video con audio
     def download_video(self):
 
         yt = YouTube(self.link)
-        
+
+        # obtenemos el video con audio
         video = yt.streams.filter(progressive=True).first()
+
+        # ruta para guardar el video
         file_path = os.path.expanduser("~\\Videos")
-        print("-- path video", file_path)
+
+        # descargar el video y guardar en la anteriro ruta
         video.download(output_path=file_path)
-            
-
-
+        
+    # esta funcioon extrae toda la informacion de la cancion antes de descargar el video o el audio
     def song_info(self):
 
         yt = YouTube(self.link)
+
+        # titulo
         self.title = yt.title
-        print(f"titulo: {yt.title}")
 
+        # auto 
         self.author = yt.author
-        print(f"autor: {self.author}")
-        audio = yt.streams.get_audio_only()
+        # audio = yt.streams.get_audio_only()
 
+        # duracion de la cancion
         time = yt.length
         hours = time//60
-        print
         minutes = int(hours%60)
         seconds = minutes%60
         self.end_time = f"{hours}:{minutes}:{seconds}"
-        print(f"tiempo: {self.end_time}")
 
+        # miniatura
         miniatura = yt.thumbnail_url
+
+        # obtener la miniatura
         download = requests.get(miniatura)
+
+        # ruta de descargas
         download_foulder = os.path.expanduser("~\\Downloads")
+
+        # ruta final para guardar se une con el nombre de la cancion
         self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
 
+        # crear el archivo de la imagen
         with open(self.miniatura_path, 'wb') as file:
             file.write(download.content)
-        pass
 
 
+# esta es la case donde esta la interfaz grafica
 class Dowloader_app:
 
     def __init__(self, page):
         self.page = page
-        self.message = ""
 
+        # entrada del link
         self.input_text = TextField(
                                     label="Paste link",
                                     bgcolor="white",
@@ -121,7 +124,7 @@ class Dowloader_app:
                                     
         )
 
-
+        # lista donde se mostraran todas las canciones
         self.songs_list = ListView(
             spacing=-15,
             expand=True,
@@ -129,6 +132,7 @@ class Dowloader_app:
             auto_scroll=True
         )
 
+        # boton para descargar el contenido
         self.Download_button = ElevatedButton(
                                             "Download",
                                             icon=icons.DOWNLOAD_ROUNDED,
@@ -140,12 +144,15 @@ class Dowloader_app:
                                             on_click=self.download_song_UI
         )
 
+        # este es el tamaño inicial del programa
         self.page.window.width = 900
         self.page.window.height = 600
 
+        # la ventana se mostrara en el centro de la pantalla
         self.page.window.center()
         self.page.update()
 
+        # esto es una cascada de opciones para escoger audio o video
         self.file_type = Dropdown(
             label="File type",
             width=110,
@@ -160,6 +167,8 @@ class Dowloader_app:
 
             ]
         )
+
+        # esta es la cascada de opciones para escoger la calidad del video, aun sin funcionalidad
         self.resolution = Dropdown(
             label="Resolution",
             width=121,
@@ -174,6 +183,7 @@ class Dowloader_app:
             ]
         )
 
+        # fila donde estan los componentes de entrada tipo de archivo y resolucion
         self.row_widgets_1 =Row(
                     controls=[
                     Column(width=120,),
@@ -184,12 +194,14 @@ class Dowloader_app:
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
             )
-        
+
+        # container para la fila anterior        
         self.container_3 = Container(
             margin=15,
             content=self.row_widgets_1
         )
-        
+
+        # fila para el boton de descarga 
         self.row_download_button = Row(
             controls=[
                 self.Download_button
@@ -197,6 +209,7 @@ class Dowloader_app:
             alignment=flet.MainAxisAlignment.CENTER
         )
 
+        # container para todos los widgets 
         self.container_2 = Container(
             content=Column(
                 controls=[
@@ -209,6 +222,8 @@ class Dowloader_app:
             margin=15,
         )
 
+        # container para el container anterior, este es el container principal de fondo, se empaquetan en diferentes containers
+        # para manejar mejor los espacios y ubicacion de cada conponente
         self.container_1 = Container(
             # bgcolor="red",
             gradient=LinearGradient(
@@ -222,6 +237,7 @@ class Dowloader_app:
             content=self.container_2
         )
 
+        # alerta de error
         self.dlg_modal = AlertDialog(
             modal=True,
             title=Text("!Upss", weight=FontWeight.W_600, size=24),
@@ -232,19 +248,22 @@ class Dowloader_app:
             actions_alignment=MainAxisAlignment.END,
         )
 
+    # funcion para abrir el dialogo
     def open_dialog(self):
         self.page.dialog = self.dlg_modal
         self.dlg_modal.open = True
         self.page.update()
-    
+
+    # funcion para cerrar el dialogo
     def close_dialog(self, e):
         self.dlg_modal.open = False
         self.page.update()
 
-    # funtions
+    # funcion para mostrar la cancion en pantalla y descargar el contenido
     def download_song_UI(self, e):
+
+        # instanciar la clase cancion desde el inicio para utilizar sus atributos y metodos mas adelante
         downloader = Cancion(self.input_text.value)
-        print("ingresando a la funcion")
 
         progressbar = ProgressBar(width=300)
         progressbar.visible = False
@@ -257,53 +276,56 @@ class Dowloader_app:
             size=14
         )
 
+        # esta funcion se crea con todo el container para darle interactividad a la bara de progreso
         def progress():
-            print("- Ingresando a progressbar")
-            # num_1 = int(num)
             progressbar.visible = True
 
             for i in range(0, 101):
-                # print(f"bucle dentro de progres {i}")
                 progressbar.value = i*0.01
                 num_progress.value = f"{i}%"
                 time.sleep(0.01)
                 self.page.update()
 
-
-
-
+        # condicional para confirmar que si se introdujo el link el tipo de archivo y resolucion
         if not self.input_text.value and self.file_type and self.resolution.value:
-            print("espacios vacios ingrese un  link")
+            self.dlg_modal.content(Text("Incomplet espaces"))
+            self.open_dialog()
 
+        # si estan completos los inputs pasa aqui
         else:
-            print("ingresando al else")
 
-
+            # si el input de tipo de archivo es Audio
             if self.file_type.value == "Audio":
 
                 try:
 
-                    print("ingresando a if del else")
-                    print("ingresando al try")
+                    # extraer la informacion de la cancion
                     downloader.song_info()
+
+                    # se extrae la ruta para la miniatura del video
                     path = downloader.miniatura_path
+
+                    # se arregla la ruta quitado la C: y las barras inclinadas hacia el otro lado,
+                    #  la barra \ se pone doble para que la tome como string
                     new_path = path.replace("\\", "/").replace("C:", "")
 
-                    print(new_path)
-                    print(downloader.link)
 
+                    """
+                    se agregan los widgets a la lista donde se ponen las canciones descargadas, 
+                    se crean nuevos widgets cada que se descarga una cancion ya que si se crean 
+                    como variables cambia el valor de todas las descargaas que se muestran en pantalla
+                    simepre que se descargue una canion
+                    """
                     self.songs_list.controls.append(
                         Container(
                             height=110,
                             margin=10,
                             padding=-7,
                                 content=Container(
-                                # bgcolor="red",
                                 margin=10,
                                 content=Row(
                                 controls=[
                                     Container(
-                                    # height=160,
                                     bgcolor="white",
                                     width=155,
                                     height=95,
@@ -316,13 +338,12 @@ class Dowloader_app:
                                     border_radius=15
                                 ),
                                 Column(
-                                    # width=500,
-                                    # height=100,
                                     controls=[
                                     Container(
-                                        # bgcolor="red",
                                         width=600,
                                         content=Text(
+                                                # se acceden a los atributos de la clase cancion desde la intancia 
+                                                # que se hizo antriormente, eneste caso es el titulo
                                                 value=downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
@@ -335,6 +356,8 @@ class Dowloader_app:
                                         spacing=10,
                                         controls=[
                                                 Text(
+                                                    # se acceden a los atributos de la clase cancion desde la intancia 
+                                                    # que se hizo antriormente, eneste caso es el autor
                                                     value=downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
@@ -342,12 +365,15 @@ class Dowloader_app:
                                                     size=17
                                                 ),
                                                 Text(
+                                                    # se acceden a los atributos de la clase cancion desde la intancia 
+                                                    # que se hizo antriormente, eneste caso es el tiempo de diracion la cancion
                                                     value=downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
                                                     size=14
                                                 ),
+                                                # barra de progreso y numero de progreso
                                                 progressbar,
                                                 num_progress
                                             ],
@@ -355,12 +381,10 @@ class Dowloader_app:
                                 ]
                                 ),
                                 Container(
-                                    # bgcolor="black",
-                                    # width=100,
-                                    # margin=10,
                                     expand=True,
                                     content=Row(
                                     controls=[
+                                                # boton para reproducir la cancion o video, aun sin funcionalidad
                                                 IconButton(icons.PLAY_CIRCLE_OUTLINE),
                                                 Column(width=10)
                                             ],
@@ -370,41 +394,46 @@ class Dowloader_app:
                                         ],
                                         )
                                     ),
-                                bgcolor="white", # #1CBF1A
+                                bgcolor="white",
                                 border_radius=15,
                                 shadow=BoxShadow(
                                         spread_radius=1,
                                         blur_radius=3,
-                                        offset=Offset(-8, 8),
+                                        offset=Offset(-6, 8),
                                         blur_style=ShadowBlurStyle.NORMAL,
                                         color="#084107"
                                         )
                         
                         )
                     )
+
+                    # se llama la funcion de barra de progrso 
                     progress()
+
+                    # se confirma la informacion extraida de la cancion 
                     if downloader.title and downloader.author and downloader.end_time:
                         try:
+                            # se descarga la cancion
                             downloader.download_song_only_audio()
                         except TypeError:
-                            print(TypeError)
+                            # si ocurre algun error me muestra la alerta
                             self.dlg_modal.content(Text("Downloaded not completed"))
+                            self.open_dialog()
                 except :
                     self.open_dialog()
                 self.page.update()
 
+                """
+                aqui se confira cuando es video, la funcionalidad es la misma que con la cancion, 
+                solo cambia la funcion para descargar el video 
+                """
             elif self.file_type.value == "Video":
 
                 try:
 
-                    print("ingresando a if del else")
-                    print("ingresando al try")
                     downloader.song_info()
                     path = downloader.miniatura_path
                     new_path = path.replace("\\", "/").replace("C:", "")
-
-                    print(new_path)
-                    print(downloader.link)
 
                     self.songs_list.controls.append(
                         Container(
@@ -412,12 +441,10 @@ class Dowloader_app:
                             margin=10,
                             padding=-7,
                                 content=Container(
-                                # bgcolor="red",
                                 margin=10,
                                 content=Row(
                                 controls=[
                                     Container(
-                                    # height=160,
                                     bgcolor="red",
                                     width=155,
                                     height=95,
@@ -430,11 +457,8 @@ class Dowloader_app:
                                     border_radius=15
                                 ),
                                 Column(
-                                    # width=500,
-                                    # height=100,
                                     controls=[
                                     Container(
-                                        # bgcolor="red",
                                         width=600,
                                         content=Text(
                                                 value=downloader.title,
@@ -469,9 +493,6 @@ class Dowloader_app:
                                 ]
                                 ),
                                 Container(
-                                    # bgcolor="black",
-                                    # width=100,
-                                    # margin=10,
                                     expand=True,
                                     content=Row(
                                     controls=[
@@ -484,12 +505,12 @@ class Dowloader_app:
                                         ],
                                         )
                                     ),
-                                bgcolor="white", # #1CBF1A
+                                bgcolor="white",
                                 border_radius=15,
                                 shadow=BoxShadow(
                                         spread_radius=1,
                                         blur_radius=3,
-                                        offset=Offset(-5, 8),
+                                        offset=Offset(-6, 8),
                                         blur_style=ShadowBlurStyle.NORMAL,
                                         color="#084107"
                                         )
@@ -499,18 +520,22 @@ class Dowloader_app:
                     progress()
                     if downloader.title and downloader.author and downloader.end_time:
                         try:
+                            # esta es la funcion para descargar el video
                             downloader.download_video()
                         except TypeError:
-                            print(TypeError)
                             self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
                     self.open_dialog()
                 self.page.update()
 
+
+    # metodo para iniciar el programa
     def start(self):
         self.page.add(self.container_1)
         self.page.update()
 
+
+# funcion para arracar el programa
 def inicio(page):
     app = Dowloader_app(page)
     app.start()
