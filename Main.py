@@ -29,7 +29,8 @@ from flet import(
     TextButton,
     MainAxisAlignment,
     ButtonStyle,
-    ProgressBar
+    ProgressBar,
+    Icon
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -152,6 +153,13 @@ class Dowloader_app:
         self.page.window.center()
         self.page.update()
 
+        self.icon_dwlad_check = Icon(
+            name=icons.CHECK_CIRCLE_ROUNDED,
+            size=200,
+            color="#5BDC44",
+            # disabled=True
+        )
+
         # esto es una cascada de opciones para escoger audio o video
         self.file_type = Dropdown(
             label="File type",
@@ -163,8 +171,6 @@ class Dowloader_app:
             options=[
                 dropdown.Option("Audio"),
                 dropdown.Option("Video"),
-
-
             ]
         )
 
@@ -241,11 +247,17 @@ class Dowloader_app:
         self.dlg_modal = AlertDialog(
             modal=True,
             title=Text("!Upss", weight=FontWeight.W_600, size=24),
-            content=Text("Link provied error :(", weight=FontWeight.W_500, size=20),
+            content=Text("Link provied error\nor internet error :(", weight=FontWeight.W_500, size=20),
             actions=[
                 TextButton("OK", on_click=self.close_dialog)
             ],
             actions_alignment=MainAxisAlignment.END,
+        )
+
+        self.icon_check_dialog = AlertDialog(
+            modal=True,
+            content=self.icon_dwlad_check,
+            bgcolor="transparent"
         )
 
     # funcion para abrir el dialogo
@@ -257,6 +269,15 @@ class Dowloader_app:
     # funcion para cerrar el dialogo
     def close_dialog(self, e):
         self.dlg_modal.open = False
+        self.page.update()
+
+    def open_icon_check(self):
+
+        self.page.dialog = self.icon_check_dialog
+        self.icon_check_dialog.open = True
+        self.page.update()
+        time.sleep(1.5)
+        self.icon_check_dialog.open = False
         self.page.update()
 
     # funcion para mostrar la cancion en pantalla y descargar el contenido
@@ -414,6 +435,7 @@ class Dowloader_app:
                     if downloader.title and downloader.author and downloader.end_time:
                         try:
                             # se descarga la cancion
+                            self.open_icon_check()
                             downloader.download_song_only_audio()
                         except TypeError:
                             # si ocurre algun error me muestra la alerta
@@ -514,13 +536,13 @@ class Dowloader_app:
                                         blur_style=ShadowBlurStyle.NORMAL,
                                         color="#084107"
                                         )
-                        
                         )
                     )
                     progress()
                     if downloader.title and downloader.author and downloader.end_time:
                         try:
                             # esta es la funcion para descargar el video
+                            self.open_icon_check()
                             downloader.download_video()
                         except TypeError:
                             self.dlg_modal.content(Text("Downloaded not completed"))
