@@ -137,7 +137,7 @@ class Dowloader_app:
                                             icon_color="#0B440A",
                                             color="#107D0E",
                                             bgcolor="white",
-                                            on_click=self.download_song
+                                            on_click=self.download_song_UI
         )
 
         self.page.window.width = 900
@@ -242,7 +242,7 @@ class Dowloader_app:
         self.page.update()
 
     # funtions
-    def download_song(self, e):
+    def download_song_UI(self, e):
         downloader = Cancion(self.input_text.value)
         print("ingresando a la funcion")
 
