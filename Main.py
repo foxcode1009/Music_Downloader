@@ -43,21 +43,19 @@ class Cancion:
         self.title = ""
         self.miniatura_path = ""
         self.register_progress = int()
-
-        print(f"- en contructor: {self.register_progress}")
+        self.confirm_download = False
 
     def download_song_only_audio(self):
         
         yt = YouTube(self.link, on_progress_callback=self.progres)
-        tittle = yt.title
-        print(f"- en download: {self.register_progress}")
+        print(f"- antes download: {self.register_progress}")
 
         audio = yt.streams.get_audio_only()
         file_path = os.path.expanduser("~\\Music")
         print(file_path)
-        final_path = os.path.join(file_path)
-        print(final_path)
-        audio.download(output_path=final_path)
+        audio.download(output_path=file_path)
+        # bar.value = self.register_progress
+        # print(f"despues del download: {self.register_progress}")
 
 
     def progres(self, stream, chunk, bytes_remaining):
@@ -68,6 +66,17 @@ class Cancion:
         print(f"- bytes restantes: {bytes_downloades}")
         self.register_progress = bytes_downloades / total_size * 100
         print(f"- progreso: {self.register_progress}")
+
+    def download_video(self):
+
+        yt = YouTube(self.link)
+        
+        video = yt.streams.filter(progressive=True).first()
+        file_path = os.path.expanduser("~\\Videos")
+        print("-- path video", file_path)
+        video.download(output_path=file_path)
+            
+
 
     def song_info(self):
 
@@ -88,12 +97,12 @@ class Cancion:
         print(f"tiempo: {self.end_time}")
 
         miniatura = yt.thumbnail_url
-        dowload = requests.get(miniatura)
+        download = requests.get(miniatura)
         download_foulder = os.path.expanduser("~\\Downloads")
         self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
 
         with open(self.miniatura_path, 'wb') as file:
-            file.write(dowload.content)
+            file.write(download.content)
         pass
 
 
@@ -120,7 +129,7 @@ class Dowloader_app:
             auto_scroll=True
         )
 
-        self.Dowload_button = ElevatedButton(
+        self.Download_button = ElevatedButton(
                                             "Download",
                                             icon=icons.DOWNLOAD_ROUNDED,
                                             width=240,
@@ -134,7 +143,7 @@ class Dowloader_app:
         self.page.window.width = 900
         self.page.window.height = 600
 
-        self.page.window_center()
+        self.page.window.center()
         self.page.update()
 
         self.file_type = Dropdown(
@@ -145,8 +154,8 @@ class Dowloader_app:
             bgcolor="white",
             border_radius=15,
             options=[
-                dropdown.Option("audio"),
-                dropdown.Option("video"),
+                dropdown.Option("Audio"),
+                dropdown.Option("Video"),
 
 
             ]
@@ -181,9 +190,9 @@ class Dowloader_app:
             content=self.row_widgets_1
         )
         
-        self.row_dowload_button = Row(
+        self.row_download_button = Row(
             controls=[
-                self.Dowload_button
+                self.Download_button
             ],
             alignment=flet.MainAxisAlignment.CENTER
         )
@@ -192,7 +201,7 @@ class Dowloader_app:
             content=Column(
                 controls=[
                     self.container_3,
-                    self.row_dowload_button,
+                    self.row_download_button,
                     self.songs_list,
                 ],
                 alignment=flet.MainAxisAlignment.START
@@ -234,6 +243,7 @@ class Dowloader_app:
 
     # funtions
     def download_song(self, e):
+        downloader = Cancion(self.input_text.value)
         print("ingresando a la funcion")
 
         progressbar = ProgressBar(width=300)
@@ -247,17 +257,20 @@ class Dowloader_app:
             size=14
         )
 
-        def progress(num):
+        def progress():
             print("- Ingresando a progressbar")
-            num_1 = int(num)
+            # num_1 = int(num)
             progressbar.visible = True
 
-            for i in range(0, num_1):
-                print(f"bucle dentro de progres {i}")
+            for i in range(0, 101):
+                # print(f"bucle dentro de progres {i}")
                 progressbar.value = i*0.01
                 num_progress.value = f"{i}%"
-                time.sleep(0.1)
+                time.sleep(0.01)
                 self.page.update()
+
+
+
 
         if not self.input_text.value and self.file_type and self.resolution.value:
             print("espacios vacios ingrese un  link")
@@ -266,19 +279,18 @@ class Dowloader_app:
             print("ingresando al else")
 
 
-            if self.file_type.value == "audio":
+            if self.file_type.value == "Audio":
 
                 try:
 
                     print("ingresando a if del else")
                     print("ingresando al try")
-                    dowloader = Cancion(self.input_text.value)
-                    dowloader.song_info()
-                    path = dowloader.miniatura_path
+                    downloader.song_info()
+                    path = downloader.miniatura_path
                     new_path = path.replace("\\", "/").replace("C:", "")
 
                     print(new_path)
-                    print(dowloader.link)
+                    print(downloader.link)
 
                     self.songs_list.controls.append(
                         Container(
@@ -311,7 +323,7 @@ class Dowloader_app:
                                         # bgcolor="red",
                                         width=600,
                                         content=Text(
-                                                value=dowloader.title,
+                                                value=downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
                                                 color="black",
@@ -320,17 +332,17 @@ class Dowloader_app:
                                         ),
                                     ),
                                     Row(
-                                        spacing=30,
+                                        spacing=10,
                                         controls=[
                                                 Text(
-                                                    value=dowloader.author,
+                                                    value=downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
                                                     color="black",
                                                     size=17
                                                 ),
                                                 Text(
-                                                    value=dowloader.end_time,
+                                                    value=downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
@@ -370,15 +382,127 @@ class Dowloader_app:
                         
                         )
                     )
-                    if dowloader.title and dowloader.author and dowloader.end_time:
+                    progress()
+                    if downloader.title and downloader.author and downloader.end_time:
                         try:
-                            dowloader.download_song_only_audio()
-                            print(f"- antes de la funcion registo {dowloader.register_progress}")
-                            progress(dowloader.register_progress)
-                            print(f"- despues de la funcion registo {dowloader.register_progress}")
+                            downloader.download_song_only_audio()
                         except TypeError:
                             print(TypeError)
-                            # self.open_dialog("Link provied error")
+                            self.dlg_modal.content(Text("Downloaded not completed"))
+                except :
+                    self.open_dialog()
+                self.page.update()
+
+            elif self.file_type.value == "Video":
+
+                try:
+
+                    print("ingresando a if del else")
+                    print("ingresando al try")
+                    downloader.song_info()
+                    path = downloader.miniatura_path
+                    new_path = path.replace("\\", "/").replace("C:", "")
+
+                    print(new_path)
+                    print(downloader.link)
+
+                    self.songs_list.controls.append(
+                        Container(
+                            height=110,
+                            margin=10,
+                            padding=-7,
+                                content=Container(
+                                # bgcolor="red",
+                                margin=10,
+                                content=Row(
+                                controls=[
+                                    Container(
+                                    # height=160,
+                                    bgcolor="red",
+                                    width=155,
+                                    height=95,
+                                    content=Image(
+                                                src=new_path,
+                                                fit=ImageFit.FILL,
+                                                width=200,
+                                                height=110
+                                            ),
+                                    border_radius=15
+                                ),
+                                Column(
+                                    # width=500,
+                                    # height=100,
+                                    controls=[
+                                    Container(
+                                        # bgcolor="red",
+                                        width=600,
+                                        content=Text(
+                                                value=downloader.title,
+                                                selectable=True,
+                                                weight=FontWeight.W_700,
+                                                color="black",
+                                                size=23
+
+                                        ),
+                                    ),
+                                    Row(
+                                        spacing=10,
+                                        controls=[
+                                                Text(
+                                                    value=downloader.author,
+                                                    selectable=True,
+                                                    weight=FontWeight.W_600,
+                                                    color="black",
+                                                    size=17
+                                                ),
+                                                Text(
+                                                    value=downloader.end_time,
+                                                    selectable=True,
+                                                    weight=FontWeight.W_500,
+                                                    color="black",
+                                                    size=14
+                                                ),
+                                                progressbar,
+                                                num_progress
+                                            ],
+                                        )
+                                ]
+                                ),
+                                Container(
+                                    # bgcolor="black",
+                                    # width=100,
+                                    # margin=10,
+                                    expand=True,
+                                    content=Row(
+                                    controls=[
+                                                IconButton(icons.PLAY_CIRCLE_OUTLINE),
+                                                Column(width=10)
+                                            ],
+                                            alignment=flet.MainAxisAlignment.END
+                                                )
+                                            )
+                                        ],
+                                        )
+                                    ),
+                                bgcolor="white", # #1CBF1A
+                                border_radius=15,
+                                shadow=BoxShadow(
+                                        spread_radius=1,
+                                        blur_radius=3,
+                                        offset=Offset(-5, 8),
+                                        blur_style=ShadowBlurStyle.NORMAL,
+                                        color="#084107"
+                                        )
+                        
+                        )
+                    )
+                    progress()
+                    if downloader.title and downloader.author and downloader.end_time:
+                        try:
+                            downloader.download_video()
+                        except TypeError:
+                            print(TypeError)
+                            self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
                     self.open_dialog()
                 self.page.update()
