@@ -33,7 +33,7 @@ from flet import(
     ButtonStyle,
     ProgressBar,
     Icon,
-    BottomSheet
+    BottomSheet,
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -104,10 +104,8 @@ class Cancion:
 
         # ruta de descargas
         download_foulder = os.path.expanduser("~\\Downloads\\Download_images")
-        print(download_foulder)
         # os.mkdir(download_foulder)
         if not os.path.exists(download_foulder):
-            print("no existe")
             os.mkdir(download_foulder)
             # ruta final para guardar se une con el nombre de la cancion
             self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
@@ -116,7 +114,6 @@ class Cancion:
             with open(self.miniatura_path, 'wb') as file:
                 file.write(download.content)
         if os.path.exists(download_foulder):
-            print("existe")
             # ruta final para guardar se une con el nombre de la cancion
             self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
 
@@ -272,7 +269,7 @@ class Dowloader_app:
         self.dlg_modal = AlertDialog(
             modal=True,
             title=Text("!Upss", weight=FontWeight.W_600, size=24),
-            content=Text("Link provied error\nor internet error :(", weight=FontWeight.W_500, size=20),
+            content=Text("Link provied error :(", weight=FontWeight.W_500, size=20),
             actions=[
                 TextButton("OK", on_click=self.close_dialog)
             ],
@@ -295,7 +292,7 @@ class Dowloader_app:
                     # width=410,
                     # height=50,
                     border_radius=15,
-                    content=Text("Connection internet error", weight=FontWeight.W_500, size=35)
+                    content=Text("Connection error", weight=FontWeight.W_500, size=35)
                     ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
@@ -312,7 +309,7 @@ class Dowloader_app:
 
     # funcion para abrir el dialogo
     def open_dialog(self):
-        self.page.dialog = self.dlg_modal
+        self.page.overlay.append(self.dlg_modal)
         self.dlg_modal.open = True
         self.page.update()
 
@@ -324,7 +321,7 @@ class Dowloader_app:
     # esta funcion muestra un check cuando termina la descarga
     def open_icon_check(self):
 
-        self.page.dialog = self.icon_check_dialog
+        self.page.overlay.append(self.icon_check_dialog)
         self.icon_check_dialog.open = True
         self.page.update()
         time.sleep(2.2)
@@ -337,6 +334,7 @@ class Dowloader_app:
             self.downloader_2.check_wifi()
             if not self.downloader_2.conexion_wifi:
                 self.Download_button.disabled = True
+                self.page.update()
                 self.page.open(self.check_wifi_banner)
                 time.sleep(3)
                 self.page.close(self.check_wifi_banner)
@@ -359,24 +357,26 @@ class Dowloader_app:
                 time.sleep(2)
                 self.page.close(self.check_wifi_banner)
                 self.Download_button.disabled = False
+                self.page.update()
                 break
             time.sleep(2)
 
     def dialog_check_wifi_in_progress(self):
-
+        print("ingreso a verificar en progres")
         self.downloader_2.check_wifi()
         if not self.downloader_2.conexion_wifi:
+            # self.Download_button.disabled = True
             self.check_wifi_banner.content = Row(
-                                                    spacing=20,
-                                                    controls=[
-                                                        Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
-                                                        Container(
-                                                            padding=10,
-                                                        # width=410,
-                                                        # height=50,
-                                                        border_radius=15,
-                                                        content=Text("Connection internet error", weight=FontWeight.W_500, size=35)
-                                                        ),
+                                                spacing=20,
+                                                controls=[
+                                                    Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
+                                                    Container(
+                                                        padding=10,
+                                                    # width=410,
+                                                    # height=50,
+                                                    border_radius=15,
+                                                    content=Text("Connection error", weight=FontWeight.W_500, size=35)
+                                                    ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
                 )
@@ -401,13 +401,14 @@ class Dowloader_app:
             self.page.open(self.check_wifi_banner)
             time.sleep(2)
             self.page.close(self.check_wifi_banner)
-            self.Download_button.disabled = False
+            # self.Download_button.disabled = False
 
                 
 
     # funcion para mostrar la cancion en pantalla y descargar el contenido
     def download_song_UI(self, e):
-
+        self.Download_button.disabled = True
+        self.page.update()
         # esta instancia es la que se usa dentro de la funcion de descargar 
         self.downloader = Cancion(self.input_text.value)
         progressbar = ProgressBar(width=300)
@@ -436,12 +437,14 @@ class Dowloader_app:
         if not self.input_text.value or not self.file_type.value or not self.resolution.value:
 
             # se muestra la alerta si no se introdujo nada en los campos
-            self.dlg_modal.content = Text("Spaces incompleted", weight=FontWeight.W_500, size=20)
+            self.dlg_modal.content = Text("incompleted Spaces", weight=FontWeight.W_500, size=20)
+            print("en if no")
             self.open_dialog()
 
         # si estan completos los inputs pasa aqui
         elif self.input_text.value and self.file_type.value and self.resolution.value:
 
+            print("en else")
             # si el input de tipo de archivo es Audio y si hay conexioon a internet procede a descargar el audio
             if self.file_type.value == "Audio" and self.downloader.conexion_wifi:
 
@@ -562,14 +565,31 @@ class Dowloader_app:
                     if self.downloader.title and self.downloader.author and self.downloader.end_time:
                         try:
                             # se descarga la cancion
+                            print("antes de descargar y el icono")
                             self.open_icon_check()
+
+                            print("antes de descargar")
                             self.downloader.download_song_only_audio()
+                            print("despues de descargar y el icono")
                         except TypeError:
                             # si ocurre algun error me muestra la alerta
                             self.dlg_modal.content(Text("Downloaded not completed"))
                             self.open_dialog()
-                except :
-                    self.dialog_check_wifi_in_progress()
+                except:
+
+                    try:
+                        requests.get(self.downloader.link)
+                        # confirm = True
+                    except requests.exceptions.MissingSchema:
+                        print("tipo de error 1", TypeError)
+                        self.dlg_modal.content = Text("Link error", weight=FontWeight.W_500, size=20)
+                        self.open_dialog()
+                    except requests.ConnectionError:
+                        print("tipo de error 2", type)
+                        self.dialog_check_wifi_in_progress()
+                        print("despues de el check icon ")
+                    finally:
+                        self.page.update()
                 self.page.update()
 
                 """
@@ -674,10 +694,25 @@ class Dowloader_app:
                         except TypeError:
                             self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
-                    self.dialog_check_wifi_in_progress()
+
+                    try:
+                        requests.get(self.downloader.link)
+                        # confirm = True
+                    except requests.exceptions.MissingSchema:
+                        print("tipo de error 1", TypeError)
+                        self.dlg_modal.content = Text("Link error", weight=FontWeight.W_500, size=20)
+                        self.open_dialog()
+                    except requests.ConnectionError:
+                        print("tipo de error 2", type)
+                        self.dialog_check_wifi_in_progress()
+                        print("despues de el check icon ")
+                    finally:
+                        self.page.update()
                 self.page.update()
             elif not self.downloader.conexion_wifi:
                 self.dialog_check_wifi_in_progress()
+        self.Download_button.disabled = False
+        self.page.update()
 
 
     # metodo para iniciar el programa
