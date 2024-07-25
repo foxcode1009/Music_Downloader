@@ -283,7 +283,7 @@ class Dowloader_app:
                     # width=410,
                     # height=50,
                     border_radius=15,
-                    content=Text("connection internet error", weight=FontWeight.W_500, size=35)
+                    content=Text("Connection internet error", weight=FontWeight.W_500, size=35)
                     ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
@@ -338,7 +338,7 @@ class Dowloader_app:
                                                         # width=410,
                                                         # height=50,
                                                         border_radius=15,
-                                                        content=Text("connection established", weight=FontWeight.W_500, size=35)
+                                                        content=Text("Connection established", weight=FontWeight.W_500, size=35)
                                                         ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
@@ -363,7 +363,7 @@ class Dowloader_app:
                                                         # width=410,
                                                         # height=50,
                                                         border_radius=15,
-                                                        content=Text("connection internet error", weight=FontWeight.W_500, size=35)
+                                                        content=Text("Connection internet error", weight=FontWeight.W_500, size=35)
                                                         ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
@@ -381,7 +381,7 @@ class Dowloader_app:
                                                         # width=410,
                                                         # height=50,
                                                         border_radius=15,
-                                                        content=Text("connection established", weight=FontWeight.W_500, size=35)
+                                                        content=Text("Connection established", weight=FontWeight.W_500, size=35)
                                                         ),
                 ],
                 alignment=flet.MainAxisAlignment.CENTER
@@ -662,8 +662,7 @@ class Dowloader_app:
                         except TypeError:
                             self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
-                    self.dlg_modal.content = Text("Link provied error\nor internet error :(", weight=FontWeight.W_500, size=20)
-                    self.open_dialog()
+                    self.dialog_check_wifi_in_progress()
                 self.page.update()
             elif not self.downloader.conexion_wifi:
                 self.dialog_check_wifi_in_progress()
