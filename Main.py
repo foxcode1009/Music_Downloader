@@ -51,17 +51,22 @@ class Cancion:
 
         # funcion para descargar el audio
     def download_song_only_audio(self):
+        print("-- funcion descargar audio")
         
         yt = YouTube(self.link)
-
+        print("-- despues de Yuotube")
         # obtener la mejor resolucion
         audio = yt.streams.get_audio_only()
+        print("-- despues de get audio")
 
         # ruta donde se guardara la cancion
         file_path = os.path.expanduser("~\\Music")
 
         # descargar la cancion 
-        audio.download(output_path=file_path)
+        print("-- antes de descargar")
+        audio.download(output_path=file_path, mp3=True)
+        print("-- despues de descargar")
+        # exit()
 
     # funcion para descargar el video con audio
     def download_video(self):
@@ -323,8 +328,10 @@ class Dowloader_app:
 
         self.page.overlay.append(self.icon_check_dialog)
         self.icon_check_dialog.open = True
-        self.page.update()
-        time.sleep(2.2)
+        # self.page.update()
+        print("-- antees de descargar dentro de check")
+        self.downloader_2.download_song_only_audio()
+        print("-- despues de descargar dentro de check")
         self.icon_check_dialog.open = False
         self.page.update()
 
@@ -409,11 +416,24 @@ class Dowloader_app:
     def download_song_UI(self, e):
         self.Download_button.disabled = True
         self.page.update()
+
         # esta instancia es la que se usa dentro de la funcion de descargar 
-        self.downloader = Cancion(self.input_text.value)
+        downloader = Cancion(self.input_text.value)
         progressbar = ProgressBar(width=300)
         progressbar.visible = False
         progressbar.value = 0
+
+        # esta funcion muestra un check cuando termina la descarga
+        def open_icon_check():
+
+            self.page.overlay.append(self.icon_check_dialog)
+            self.icon_check_dialog.open = True
+            self.page.update()
+            print("-- antees de descargar dentro de check")
+            downloader.download_song_only_audio()
+            print("-- despues de descargar dentro de check")
+            self.icon_check_dialog.open = False
+            self.page.update()
 
         # numero de progreso de descarga
         num_progress = Text(
@@ -446,15 +466,15 @@ class Dowloader_app:
 
             print("en else")
             # si el input de tipo de archivo es Audio y si hay conexioon a internet procede a descargar el audio
-            if self.file_type.value == "Audio" and self.downloader.conexion_wifi:
+            if self.file_type.value == "Audio" and downloader.conexion_wifi:
 
                 try:
 
                     # extraer la informacion de la cancion
-                    self.downloader.song_info()
+                    downloader.song_info()
 
                     # se extrae la ruta para la miniatura del video
-                    path = self.downloader.miniatura_path
+                    path = downloader.miniatura_path
 
                     # se arregla la ruta quitado la C: y las barras inclinadas hacia el otro lado,
                     #  la barra \ se pone doble para que la tome como string
@@ -495,7 +515,7 @@ class Dowloader_app:
                                         content=Text(
                                                 # se acceden a los atributos de la clase cancion desde la intancia 
                                                 # que se hizo antriormente, eneste caso es el titulo
-                                                value=self.downloader.title,
+                                                value=downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
                                                 color="black",
@@ -509,7 +529,7 @@ class Dowloader_app:
                                                 Text(
                                                     # se acceden a los atributos de la clase cancion desde la intancia 
                                                     # que se hizo antriormente, eneste caso es el autor
-                                                    value=self.downloader.author,
+                                                    value=downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
                                                     color="black",
@@ -518,7 +538,7 @@ class Dowloader_app:
                                                 Text(
                                                     # se acceden a los atributos de la clase cancion desde la intancia 
                                                     # que se hizo antriormente, eneste caso es el tiempo de diracion la cancion
-                                                    value=self.downloader.end_time,
+                                                    value=downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
@@ -562,15 +582,15 @@ class Dowloader_app:
                     progress()
 
                     # se confirma la informacion extraida de la cancion 
-                    if self.downloader.title and self.downloader.author and self.downloader.end_time:
+                    if downloader.title and downloader.author and downloader.end_time:
                         try:
                             # se descarga la cancion
                             print("antes de descargar y el icono")
-                            self.open_icon_check()
-
-                            print("antes de descargar")
-                            self.downloader.download_song_only_audio()
-                            print("despues de descargar y el icono")
+                            open_icon_check()
+                            # self.icon_check_dialog.open = False
+                            print("-- despues de descargar y mostrar check")
+                            # self.downloader.download_song_only_audio()
+                            # print("despues de descargar y el icono")
                         except TypeError:
                             # si ocurre algun error me muestra la alerta
                             self.dlg_modal.content(Text("Downloaded not completed"))
@@ -578,7 +598,7 @@ class Dowloader_app:
                 except:
 
                     try:
-                        requests.get(self.downloader.link)
+                        requests.get(downloader.link)
                         # confirm = True
                     except requests.exceptions.MissingSchema:
                         print("tipo de error 1", TypeError)
@@ -597,11 +617,11 @@ class Dowloader_app:
                 solo cambia la funcion para descargar el video 
                 """
 
-            elif self.file_type.value == "Video" and self.downloader.conexion_wifi:
+            elif self.file_type.value == "Video" and downloader.conexion_wifi:
 
                 try:
-                    self.downloader.song_info()
-                    path = self.downloader.miniatura_path
+                    downloader.song_info()
+                    path = downloader.miniatura_path
                     new_path = path.replace("\\", "/").replace("C:", "")
 
                     self.songs_list.controls.append(
@@ -630,7 +650,7 @@ class Dowloader_app:
                                     Container(
                                         width=600,
                                         content=Text(
-                                                value=self.downloader.title,
+                                                value=downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
                                                 color="black",
@@ -642,14 +662,14 @@ class Dowloader_app:
                                         spacing=10,
                                         controls=[
                                                 Text(
-                                                    value=self.downloader.author,
+                                                    value=downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
                                                     color="black",
                                                     size=17
                                                 ),
                                                 Text(
-                                                    value=self.downloader.end_time,
+                                                    value=downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
@@ -686,17 +706,17 @@ class Dowloader_app:
                         )
                     )
                     progress()
-                    if self.downloader.title and self.downloader.author and self.downloader.end_time:
+                    if downloader.title and downloader.author and downloader.end_time:
                         try:
                             # esta es la funcion para descargar el video
-                            self.open_icon_check()
-                            self.downloader.download_video()
+                            open_icon_check()
+                            # downloader.download_video()
                         except TypeError:
                             self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
 
                     try:
-                        requests.get(self.downloader.link)
+                        requests.get(downloader.link)
                         # confirm = True
                     except requests.exceptions.MissingSchema:
                         print("tipo de error 1", TypeError)
@@ -709,7 +729,7 @@ class Dowloader_app:
                     finally:
                         self.page.update()
                 self.page.update()
-            elif not self.downloader.conexion_wifi:
+            elif not downloader.conexion_wifi:
                 self.dialog_check_wifi_in_progress()
         self.Download_button.disabled = False
         self.page.update()
@@ -743,3 +763,11 @@ def inicio(page):
     page.update()
 
 flet.app(target=inicio)
+
+
+
+"""
+para poder reproducir la musica sera necesario convertir la musica descargada mp3 a WAV, 
+luego guardarla en el ordenador, esa ruta de la cacnion co WAV se reproduce con pygame.
+pero ademas se tendra que eliminar el archivo mp3 para liberar espacio y que no quede duplicada la cancio
+"""
