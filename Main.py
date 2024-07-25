@@ -103,14 +103,26 @@ class Cancion:
         download = requests.get(miniatura)
 
         # ruta de descargas
-        download_foulder = os.path.expanduser("~\\Downloads")
+        download_foulder = os.path.expanduser("~\\Downloads\\Download_images")
+        print(download_foulder)
+        # os.mkdir(download_foulder)
+        if not os.path.exists(download_foulder):
+            print("no existe")
+            os.mkdir(download_foulder)
+            # ruta final para guardar se une con el nombre de la cancion
+            self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
 
-        # ruta final para guardar se une con el nombre de la cancion
-        self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
+            # crear el archivo de la imagen
+            with open(self.miniatura_path, 'wb') as file:
+                file.write(download.content)
+        if os.path.exists(download_foulder):
+            print("existe")
+            # ruta final para guardar se une con el nombre de la cancion
+            self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
 
-        # crear el archivo de la imagen
-        with open(self.miniatura_path, 'wb') as file:
-            file.write(download.content)
+            # crear el archivo de la imagen
+            with open(self.miniatura_path, 'wb') as file:
+                file.write(download.content)
 
     def check_wifi(self):
 
@@ -315,7 +327,7 @@ class Dowloader_app:
         self.page.dialog = self.icon_check_dialog
         self.icon_check_dialog.open = True
         self.page.update()
-        time.sleep(1.5)
+        time.sleep(2.2)
         self.icon_check_dialog.open = False
         self.page.update()
 
