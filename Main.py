@@ -1,8 +1,10 @@
+import urllib.request
 from pytubefix import YouTube
 import requests
 import os
 import flet
 import time
+import requests
 
 from flet import(
     Container,
@@ -30,7 +32,8 @@ from flet import(
     MainAxisAlignment,
     ButtonStyle,
     ProgressBar,
-    Icon
+    Icon,
+    BottomSheet
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -44,6 +47,7 @@ class Cancion:
         self.end_time = ""
         self.title = ""
         self.miniatura_path = ""
+        self.conexion_wifi = True
 
         # funcion para descargar el audio
     def download_song_only_audio(self):
@@ -108,6 +112,14 @@ class Cancion:
         with open(self.miniatura_path, 'wb') as file:
             file.write(download.content)
 
+    def check_wifi(self):
+
+        try:
+            url = "https://www.google.com"
+            requests.get(url, timeout=7)
+            self.conexion_wifi = True
+        except:
+            self.conexion_wifi = False
 
 # esta es la case donde esta la interfaz grafica
 class Dowloader_app:
@@ -153,6 +165,7 @@ class Dowloader_app:
         self.page.window.center()
         self.page.update()
 
+        # icono de check
         self.icon_dwlad_check = Icon(
             name=icons.CHECK_CIRCLE_ROUNDED,
             size=200,
@@ -260,6 +273,31 @@ class Dowloader_app:
             bgcolor="transparent"
         )
 
+        self.check_wifi_banner = BottomSheet(
+            content=Row(
+                spacing=20,
+                controls=[
+                    Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
+                    Container(
+                        padding=10,
+                    # width=410,
+                    # height=50,
+                    border_radius=15,
+                    content=Text("connection internet error", weight=FontWeight.W_500, size=35)
+                    ),
+                ],
+                alignment=flet.MainAxisAlignment.CENTER
+            )
+        )
+
+
+        """
+        la clase cancion se intancia dos veces esta instancia es para poder usarla fuera 
+        de la funcion de descargar el video o audio
+        ya que si hago una sola instancia para todo no me retorna los valores necesarios
+        """
+        self.downloader_2 = Cancion(self.input_text.value)
+
     # funcion para abrir el dialogo
     def open_dialog(self):
         self.page.dialog = self.dlg_modal
@@ -271,6 +309,7 @@ class Dowloader_app:
         self.dlg_modal.open = False
         self.page.update()
 
+    # esta funcion muestra un check cuando termina la descarga
     def open_icon_check(self):
 
         self.page.dialog = self.icon_check_dialog
@@ -280,16 +319,90 @@ class Dowloader_app:
         self.icon_check_dialog.open = False
         self.page.update()
 
+    def dialog_check_wifi_initial(self):
+
+        while True:
+            self.downloader_2.check_wifi()
+            if not self.downloader_2.conexion_wifi:
+                self.Download_button.disabled = True
+                self.page.open(self.check_wifi_banner)
+                time.sleep(3)
+                self.page.close(self.check_wifi_banner)
+            elif self.downloader_2.conexion_wifi:
+                self.check_wifi_banner.content = Row(
+                                                    spacing=20,
+                                                    controls=[
+                                                        Icon(name=icons.SIGNAL_WIFI_STATUSBAR_4_BAR, color="#27E127" ,size=30),
+                                                        Container(
+                                                            padding=10,
+                                                        # width=410,
+                                                        # height=50,
+                                                        border_radius=15,
+                                                        content=Text("connection established", weight=FontWeight.W_500, size=35)
+                                                        ),
+                ],
+                alignment=flet.MainAxisAlignment.CENTER
+                )
+                self.page.open(self.check_wifi_banner)
+                time.sleep(2)
+                self.page.close(self.check_wifi_banner)
+                self.Download_button.disabled = False
+                break
+            time.sleep(2)
+
+    def dialog_check_wifi_in_progress(self):
+
+        self.downloader_2.check_wifi()
+        if not self.downloader_2.conexion_wifi:
+            self.check_wifi_banner.content = Row(
+                                                    spacing=20,
+                                                    controls=[
+                                                        Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
+                                                        Container(
+                                                            padding=10,
+                                                        # width=410,
+                                                        # height=50,
+                                                        border_radius=15,
+                                                        content=Text("connection internet error", weight=FontWeight.W_500, size=35)
+                                                        ),
+                ],
+                alignment=flet.MainAxisAlignment.CENTER
+                )
+            self.page.open(self.check_wifi_banner)
+            time.sleep(3)
+            self.page.close(self.check_wifi_banner)
+        if self.downloader_2.conexion_wifi:
+            self.check_wifi_banner.content = Row(
+                                                    spacing=20,
+                                                    controls=[
+                                                        Icon(name=icons.SIGNAL_WIFI_STATUSBAR_4_BAR, color="#27E127" ,size=30),
+                                                        Container(
+                                                            padding=10,
+                                                        # width=410,
+                                                        # height=50,
+                                                        border_radius=15,
+                                                        content=Text("connection established", weight=FontWeight.W_500, size=35)
+                                                        ),
+                ],
+                alignment=flet.MainAxisAlignment.CENTER
+                )
+            self.page.open(self.check_wifi_banner)
+            time.sleep(2)
+            self.page.close(self.check_wifi_banner)
+            self.Download_button.disabled = False
+
+                
+
     # funcion para mostrar la cancion en pantalla y descargar el contenido
     def download_song_UI(self, e):
 
-        # instanciar la clase cancion desde el inicio para utilizar sus atributos y metodos mas adelante
-        downloader = Cancion(self.input_text.value)
-
+        # esta instancia es la que se usa dentro de la funcion de descargar 
+        self.downloader = Cancion(self.input_text.value)
         progressbar = ProgressBar(width=300)
         progressbar.visible = False
         progressbar.value = 0
 
+        # numero de progreso de descarga
         num_progress = Text(
             selectable=True,
             weight=FontWeight.W_500,
@@ -308,23 +421,25 @@ class Dowloader_app:
                 self.page.update()
 
         # condicional para confirmar que si se introdujo el link el tipo de archivo y resolucion
-        if not self.input_text.value and self.file_type and self.resolution.value:
-            self.dlg_modal.content(Text("Incomplet espaces"))
+        if not self.input_text.value or not self.file_type.value or not self.resolution.value:
+
+            # se muestra la alerta si no se introdujo nada en los campos
+            self.dlg_modal.content = Text("Spaces incompleted", weight=FontWeight.W_500, size=20)
             self.open_dialog()
 
         # si estan completos los inputs pasa aqui
-        else:
+        elif self.input_text.value and self.file_type.value and self.resolution.value:
 
-            # si el input de tipo de archivo es Audio
-            if self.file_type.value == "Audio":
+            # si el input de tipo de archivo es Audio y si hay conexioon a internet procede a descargar el audio
+            if self.file_type.value == "Audio" and self.downloader.conexion_wifi:
 
                 try:
 
                     # extraer la informacion de la cancion
-                    downloader.song_info()
+                    self.downloader.song_info()
 
                     # se extrae la ruta para la miniatura del video
-                    path = downloader.miniatura_path
+                    path = self.downloader.miniatura_path
 
                     # se arregla la ruta quitado la C: y las barras inclinadas hacia el otro lado,
                     #  la barra \ se pone doble para que la tome como string
@@ -365,7 +480,7 @@ class Dowloader_app:
                                         content=Text(
                                                 # se acceden a los atributos de la clase cancion desde la intancia 
                                                 # que se hizo antriormente, eneste caso es el titulo
-                                                value=downloader.title,
+                                                value=self.downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
                                                 color="black",
@@ -379,7 +494,7 @@ class Dowloader_app:
                                                 Text(
                                                     # se acceden a los atributos de la clase cancion desde la intancia 
                                                     # que se hizo antriormente, eneste caso es el autor
-                                                    value=downloader.author,
+                                                    value=self.downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
                                                     color="black",
@@ -388,7 +503,7 @@ class Dowloader_app:
                                                 Text(
                                                     # se acceden a los atributos de la clase cancion desde la intancia 
                                                     # que se hizo antriormente, eneste caso es el tiempo de diracion la cancion
-                                                    value=downloader.end_time,
+                                                    value=self.downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
@@ -432,29 +547,29 @@ class Dowloader_app:
                     progress()
 
                     # se confirma la informacion extraida de la cancion 
-                    if downloader.title and downloader.author and downloader.end_time:
+                    if self.downloader.title and self.downloader.author and self.downloader.end_time:
                         try:
                             # se descarga la cancion
                             self.open_icon_check()
-                            downloader.download_song_only_audio()
+                            self.downloader.download_song_only_audio()
                         except TypeError:
                             # si ocurre algun error me muestra la alerta
                             self.dlg_modal.content(Text("Downloaded not completed"))
                             self.open_dialog()
                 except :
-                    self.open_dialog()
+                    self.dialog_check_wifi_in_progress()
                 self.page.update()
 
                 """
                 aqui se confira cuando es video, la funcionalidad es la misma que con la cancion, 
                 solo cambia la funcion para descargar el video 
                 """
-            elif self.file_type.value == "Video":
+
+            elif self.file_type.value == "Video" and self.downloader.conexion_wifi:
 
                 try:
-
-                    downloader.song_info()
-                    path = downloader.miniatura_path
+                    self.downloader.song_info()
+                    path = self.downloader.miniatura_path
                     new_path = path.replace("\\", "/").replace("C:", "")
 
                     self.songs_list.controls.append(
@@ -483,7 +598,7 @@ class Dowloader_app:
                                     Container(
                                         width=600,
                                         content=Text(
-                                                value=downloader.title,
+                                                value=self.downloader.title,
                                                 selectable=True,
                                                 weight=FontWeight.W_700,
                                                 color="black",
@@ -495,14 +610,14 @@ class Dowloader_app:
                                         spacing=10,
                                         controls=[
                                                 Text(
-                                                    value=downloader.author,
+                                                    value=self.downloader.author,
                                                     selectable=True,
                                                     weight=FontWeight.W_600,
                                                     color="black",
                                                     size=17
                                                 ),
                                                 Text(
-                                                    value=downloader.end_time,
+                                                    value=self.downloader.end_time,
                                                     selectable=True,
                                                     weight=FontWeight.W_500,
                                                     color="black",
@@ -539,21 +654,39 @@ class Dowloader_app:
                         )
                     )
                     progress()
-                    if downloader.title and downloader.author and downloader.end_time:
+                    if self.downloader.title and self.downloader.author and self.downloader.end_time:
                         try:
                             # esta es la funcion para descargar el video
                             self.open_icon_check()
-                            downloader.download_video()
+                            self.downloader.download_video()
                         except TypeError:
                             self.dlg_modal.content(Text("Downloaded not completed"))
                 except :
+                    self.dlg_modal.content = Text("Link provied error\nor internet error :(", weight=FontWeight.W_500, size=20)
                     self.open_dialog()
                 self.page.update()
+            elif not self.downloader.conexion_wifi:
+                self.dialog_check_wifi_in_progress()
 
 
     # metodo para iniciar el programa
     def start(self):
-        self.page.add(self.container_1)
+
+        # se verifica el wifi con el metodo de la clase cancion si  
+        self.downloader_2.check_wifi()
+
+        # si esta en True me inicia el programa
+        if self.downloader_2.conexion_wifi:
+            self.page.add(self.container_1)
+
+            """
+            si esta en False se iniciara el programa igualmente pero con la funcion que muestra la alerta de conexion de wifi.
+            lo separe en un condicional ya que si inicio el programa directamente y luego pogo la funcion de alerta de coneccion
+            me mostrara la alerta de coneccion etablecida y la idea es que no me muestre nada si ya esta la coneccion
+            """
+        else:
+            self.page.add(self.container_1)
+            self.dialog_check_wifi_initial()
         self.page.update()
 
 
