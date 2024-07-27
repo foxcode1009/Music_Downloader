@@ -74,8 +74,22 @@ class Cancion:
 
         # descargar el video y guardar en la anteriro ruta
         video.download(output_path=file_path)
+
+        # se extrae el nombre del archivo con el que se descargo
+
+        """
+        esto lo hago porque en la funcion de informacion del video, se obtiene el titulo del video como se muestra en youtube, pero
+        cuando se descarga se eliminan los puntos, por lo tanto cuando se hacee la condicion de verificar 
+        si el archivo existe devolvera false y se descargara el video no importa si ya esta descargado,
+        lo que hice fue renombrar el archivo de la cancion y darle el titulo que se muestra en youtube.
+        """
+
+        file_name = video.default_filename
+        if os.path.exists(os.path.expanduser("~\\Videos\\"+file_name)):
+            os.rename(os.path.expanduser("~\\Videos\\"+file_name), os.path.expanduser("~\\Videos\\"+self.title+".mp4"))
         
-    # esta funcioon extrae toda la informacion de la cancion antes de descargar el video o el audio
+        
+    # esta funcioon extrae toda la informacion de la cancion antes de descargar el audio
     def song_info(self):
 
         yt = YouTube(self.link)
@@ -83,8 +97,11 @@ class Cancion:
         # titulo
         self.title = yt.title
 
+        # si existe el archivo no cambia la variable exist_file y la deja en true
         if os.path.exists(os.path.expanduser("~\\Music\\"+self.title+".mp3")):
             pass
+
+        # si no existe el archivo se extrae la infomacion 
         elif not os.path.exists(os.path.expanduser("~\\Music\\"+self.title+".mp3")):
 
             # auto 
@@ -102,6 +119,7 @@ class Cancion:
 
             # ruta de descargas
             download_foulder = os.path.expanduser("~\\Downloads\\Download_images")
+
             # os.mkdir(download_foulder)
             if not os.path.exists(download_foulder):
                 os.mkdir(download_foulder)
@@ -118,9 +136,10 @@ class Cancion:
                 # crear el archivo de la imagen
                 with open(self.miniatura_path, 'wb') as file:
                     file.write(download.content)
+            # cambiar el valor de la variable a False para que agregue el contenido a la pantalla y luuego se descargue
             self.exist_file = False
     
-     # esta funcioon extrae toda la informacion de la cancion antes de descargar el video o el audio
+     # esta funcioon extrae toda la informacion de la cancion antes de descargar el video
     def video_info(self):
 
         yt = YouTube(self.link)
@@ -128,8 +147,11 @@ class Cancion:
         # titulo
         self.title = yt.title
 
+        # si existe el archivo no cambia la variable exist_file y la deja en true
         if os.path.exists(os.path.expanduser("~\\Videos\\"+self.title+".mp4")):
             pass
+
+        # si no existe el archivo se extrae la infomacion 
         elif not os.path.exists(os.path.expanduser("~\\Videos\\"+self.title+".mp4")):
             # auto 
             self.author = yt.author
@@ -165,24 +187,27 @@ class Cancion:
                     file.write(download.content)
             self.exist_file = False
 
+    # funcion para verificar la conexion de wifi
     def check_wifi(self):
 
         try:
             url = "https://www.google.com"
-            requests.get(url, timeout=7)
+            requests.get(url, timeout=5)
             self.conexion_wifi = True
         except:
             self.conexion_wifi = False
-    
+
+    # funcion para la duracion de la cancion o video
     def time_song_video(self, seg):
 
+        # esta condicion es para cuando los segundos son menores a una hora y facilitar el proceso
         if seg <= 3600:
-
             minutos = seg//60
             segundos = seg%60
             self.end_time = f"{minutos:02d}:{segundos:02d}"
-        if seg > 3600:
-
+        
+        # si los segundos son amyores a una hora se hace la operacion con horas minutos y segundos
+        elif seg > 3600:
             horas = seg//3600
             minutos_2 = int(seg%3600)//60
             segundos_2 = int(seg%3600)%60
@@ -204,6 +229,7 @@ class Dowloader_app:
                                     
         )
 
+        # boton para actualizar el boton de descargar, es para si el boton de descargar se desactiva.
         self.button_update = IconButton(
             icon=icons.UPDATE_ROUNDED,
             icon_color="#8e9c8e",
@@ -399,6 +425,9 @@ class Dowloader_app:
         self.dlg_modal.open = False
         self.page.update()
 
+    # esta funcion muestra la alerta cuando se inicia el programa, si no 
+    # hay conexion a internet, se ejecutara en unbucle hasta que se conecte.
+    # el boton de descarga estara bloqueado hasta que se conecte al wifi
     def dialog_check_wifi_initial(self):
 
         while True:
@@ -428,23 +457,25 @@ class Dowloader_app:
                 self.page.open(self.check_wifi_banner)
                 time.sleep(2)
                 self.page.close(self.check_wifi_banner)
+                # aqui se activa dde nuevo el boton de descrga
                 self.Download_button.disabled = False
                 self.page.update()
                 break
             time.sleep(2)
 
+    # esta funcion es igual que la anterior pero se llamara cuando se oprima el boton de descarga, ya que si no hay 
+    # conexion se pueda informar al usuario que no tiene conexion.
     def dialog_check_wifi_in_progress(self):
+        # se llama la funcion que erifica la conexion
         self.downloader_2.check_wifi()
         if not self.downloader_2.conexion_wifi:
-            # self.Download_button.disabled = True
+
             self.check_wifi_banner.content = Row(
                                                 spacing=20,
                                                 controls=[
                                                     Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
                                                     Container(
                                                         padding=10,
-                                                    # width=410,
-                                                    # height=50,
                                                     border_radius=15,
                                                     content=Text("Connection error", weight=FontWeight.W_500, size=35)
                                                     ),
@@ -462,8 +493,6 @@ class Dowloader_app:
                                                         Icon(name=icons.SIGNAL_WIFI_STATUSBAR_4_BAR, color="#27E127" ,size=30),
                                                         Container(
                                                             padding=10,
-                                                        # width=410,
-                                                        # height=50,
                                                         border_radius=15,
                                                         content=Text("Connection established", weight=FontWeight.W_500, size=35)
                                                         ),
@@ -473,7 +502,6 @@ class Dowloader_app:
             self.page.open(self.check_wifi_banner)
             time.sleep(2)
             self.page.close(self.check_wifi_banner)
-            # self.Download_button.disabled = False
             self.page.update()
 
                 
@@ -496,15 +524,21 @@ class Dowloader_app:
             self.page.overlay.append(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
+
+            # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
+            #  descargara el audio, cuando termine la descarga desaparece el check
             downloader.download_song_only_audio()
             self.icon_check_dialog.open = False
             self.page.update()
 
+        # este es el check de descarga del video
         def open_icon_check_video():
 
             self.page.overlay.append(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
+            # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
+            # descargara el video, cuando termine la descarga desaparece el check
             downloader.download_video()
             self.icon_check_dialog.open = False
             self.page.update()
@@ -665,6 +699,8 @@ class Dowloader_app:
                         if downloader.title and downloader.author and downloader.end_time:
                             try:
                                 # se descarga la cancion
+                                # cuando se llama esta fucion se muestra el check de descarga luego inicia la descarga y cuuando termina 
+                                # desaparece el check de descarga
                                 open_icon_check_audio()
                                 self.input_text.value = ""
                                 self.Download_button.disabled = False
@@ -688,7 +724,7 @@ class Dowloader_app:
                 self.page.update()
 
                 """
-                aqui se confira cuando es video, la funcionalidad es la misma que con la cancion, 
+                aqui se confira cuando es la eleccion del usuario es video, la funcionalidad es la misma que con la cancion, 
                 solo cambia la funcion para descargar el video 
                 """
 
@@ -805,7 +841,6 @@ class Dowloader_app:
                         requests.get(downloader.link)
                         # confirm = True
                     except requests.exceptions.MissingSchema:
-                        print("tipo de error 1", TypeError)
                         self.dlg_modal.content = Text("Link error", weight=FontWeight.W_500, size=20)
                         self.open_dialog()
                     except requests.ConnectionError:
