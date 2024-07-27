@@ -197,8 +197,10 @@ class Dowloader_app:
         )
 
         self.button_update = IconButton(
-            icon=icons.UPDATE_ROUNDED
-            icon_color="#8e9c8e"
+            icon=icons.UPDATE_ROUNDED,
+            icon_color="#8e9c8e",
+            icon_size=38,
+            on_click=self.page_update
         )
 
         # lista donde se mostraran todas las canciones
@@ -292,17 +294,28 @@ class Dowloader_app:
             alignment=flet.MainAxisAlignment.CENTER
         )
 
+        self.container_update = Container(
+            width=self.page.width,
+            # expand=True,
+            content=Row(controls=[
+                Row(width=800),
+                self.button_update
+                ]),
+        )
+
         # container para todos los widgets 
         self.container_2 = Container(
             content=Column(
+                spacing=-5,
                 controls=[
+                    self.container_update,
                     self.container_3,
                     self.row_download_button,
                     self.songs_list,
                 ],
                 alignment=flet.MainAxisAlignment.START
             ),
-            margin=15,
+            margin=5,
         )
 
         # container para el container anterior, este es el container principal de fondo, se empaquetan en diferentes containers
@@ -317,14 +330,7 @@ class Dowloader_app:
             expand=True,
             margin=-10,
             height=self.page.height,
-            content=Row(
-                controls=[
-                    self.container_2,
-                    Column(
-                        control=self.button_udate
-                    )
-                ]
-            )
+            content=self.container_2
         )
 
         # alerta de error
@@ -368,6 +374,11 @@ class Dowloader_app:
         ya que si hago una sola instancia para todo no me retorna los valores necesarios
         """
         self.downloader_2 = Cancion(self.input_text.value)
+
+    
+    def page_update(self, e):
+        self.Download_button.disabled = False
+        self.page.update()
 
     # funcion para abrir el dialogo
     def open_dialog(self):
@@ -415,7 +426,6 @@ class Dowloader_app:
             time.sleep(2)
 
     def dialog_check_wifi_in_progress(self):
-        print("ingreso a verificar en progres")
         self.downloader_2.check_wifi()
         if not self.downloader_2.conexion_wifi:
             # self.Download_button.disabled = True
@@ -647,12 +657,10 @@ class Dowloader_app:
                         if downloader.title and downloader.author and downloader.end_time:
                             try:
                                 # se descarga la cancion
-                                print("antes de descargar y el icono")
                                 open_icon_check_audio()
-                                # self.icon_check_dialog.open = False
-                                print("-- despues de descargar y mostrar check")
-                                # self.downloader.download_song_only_audio()
-                                # print("despues de descargar y el icono")
+                                self.input_text.value = ""
+                                self.Download_button.disabled = False
+    
                                 self.page.update()
                             except TypeError:
                                 # si ocurre algun error me muestra la alerta
@@ -777,6 +785,7 @@ class Dowloader_app:
                             try:
                                 # esta es la funcion para descargar el video
                                 open_icon_check_video()
+                                self.input_text.value = ""
                                 self.Download_button.disabled = False
                                 self.page.update()
                                 # downloader.download_video()
