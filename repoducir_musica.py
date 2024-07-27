@@ -1,18 +1,14 @@
-from pydub import AudioSegment
-#from pydub.playback import play
-import os
+from pygame import mixer
 import pygame
-
-mp3_audio = AudioSegment.from_file(os.path.expanduser("~\\Music\\Cris MJ 2024 (LetraLyrics) - Mejores Canciones de Cris MJ - Éxitos De Cris MJ - Mix Reggaeton 2024.mp3"), format="mp3")
-cancion_wav = mp3_audio.export("convertida.wav", format="wav")
-
+import tkinter
+import os
 
 
-# Inicializa el mezclador
-pygame.mixer.init()
 
 # Ruta completa al archivo WAV
-cancion = os.path.expanduser("~\\Music\\Cris-MJ-Ando-Buscando-_Video-Oficial_.wav")
+cancion = os.path.expanduser("~\\Music\\Cris MJ - No Ponga Excusas (Video Oficial).mp3")
+
+pygame.mixer.init()
 
 # Carga la canción
 pygame.mixer.music.load(cancion)
@@ -25,4 +21,4 @@ while pygame.mixer.music.get_busy():
     pass
 
 # Cierra el mezclador
-pygame.quit()
+pygame.mixer.quit()
