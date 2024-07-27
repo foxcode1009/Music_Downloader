@@ -92,10 +92,7 @@ class Cancion:
 
             # duracion de la cancion
             time = yt.length
-            hours = time//60
-            minutes = int(hours%60)
-            seconds = minutes%60
-            self.end_time = f"{hours}:{minutes}:{seconds}"
+            self.time_song_video(time)
 
             # miniatura
             miniatura = yt.thumbnail_url
@@ -140,10 +137,7 @@ class Cancion:
 
             # duracion de la cancion
             time = yt.length
-            hours = time//60
-            minutes = int(hours%60)
-            seconds = minutes%60
-            self.end_time = f"{hours}:{minutes}:{seconds}"
+            self.time_song_video(time)
 
             # miniatura
             miniatura = yt.thumbnail_url
@@ -179,6 +173,20 @@ class Cancion:
             self.conexion_wifi = True
         except:
             self.conexion_wifi = False
+    
+    def time_song_video(self, seg):
+
+        if seg <= 3600:
+
+            minutos = seg//60
+            segundos = seg%60
+            self.end_time = f"{minutos:02d}:{segundos:02d}"
+        if seg > 3600:
+
+            horas = seg//3600
+            minutos_2 = int(seg%3600)//60
+            segundos_2 = int(seg%3600)%60
+            self.end_time = f"{horas:02d}:{minutos_2:02d}:{segundos_2:02d}"
 
 # esta es la case donde esta la interfaz grafica
 class Dowloader_app:
