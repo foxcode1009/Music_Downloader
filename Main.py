@@ -31,6 +31,7 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
+    Margin
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -239,10 +240,10 @@ class Dowloader_app:
 
         # lista donde se mostraran todas las canciones
         self.songs_list = ListView(
-            spacing=-15,
+            spacing=20,
             expand=True,
             reverse=True,
-            auto_scroll=True
+            auto_scroll=True,
         )
 
         # boton para descargar el contenido
@@ -258,8 +259,8 @@ class Dowloader_app:
         )
 
         # este es el tamaño inicial del programa
-        self.page.window.width = 900
-        self.page.window.height = 600
+        self.page.window.width = 1050
+        self.page.window.height = 630
 
         # la ventana se mostrara en el centro de la pantalla
         self.page.window.center()
@@ -329,23 +330,29 @@ class Dowloader_app:
         )
 
         self.container_update = Container(
-            width=self.page.width,
-            # expand=True,
             content=Row(controls=[
-                Row(width=800),
                 self.button_update
-                ]),
+                ],
+                alignment=flet.MainAxisAlignment.END
+            ),
+        )
+
+        self.container_song_list = Container(
+            margin=flet.margin.only(bottom=30),
+            # bgcolor="red",
+            expand=True,
+            content=self.songs_list,
         )
 
         # container para todos los widgets 
         self.container_2 = Container(
             content=Column(
-                spacing=-5,
+                spacing=5,
                 controls=[
                     self.container_update,
                     self.container_3,
                     self.row_download_button,
-                    self.songs_list,
+                    self.container_song_list
                 ],
                 alignment=flet.MainAxisAlignment.START
             ),
@@ -355,16 +362,20 @@ class Dowloader_app:
         # container para el container anterior, este es el container principal de fondo, se empaquetan en diferentes containers
         # para manejar mejor los espacios y ubicacion de cada conponente
         self.container_1 = Container(
-            # bgcolor="red",
-            gradient=LinearGradient(
-                begin=alignment.center_right,
-                end=alignment.top_left,
-                colors=["#0B440A", "#107D0E", "#129B0F",]
-            ),
+            bgcolor="transparent",
             expand=True,
             margin=-10,
             height=self.page.height,
             content=self.container_2
+        )
+
+        self.container_bground = Container(
+            content=self.container_1,
+            image_src=r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\bground_lofi.jpg",
+            image_fit="FILL",
+            expand=True,
+            height=self.page.height,
+            margin=-10
         )
 
         # alerta de error
@@ -391,8 +402,6 @@ class Dowloader_app:
                     Icon(name=icons.SIGNAL_WIFI_OFF_SHARP, color="#BD0014" ,size=30),
                     Container(
                         padding=10,
-                    # width=410,
-                    # height=50,
                     border_radius=15,
                     content=Text("Connection error", weight=FontWeight.W_500, size=35)
                     ),
@@ -603,7 +612,7 @@ class Dowloader_app:
                         self.songs_list.controls.append(
                             Container(
                                 height=110,
-                                margin=10,
+                                margin=flet.margin.only(left=85, right=85),
                                 padding=-7,
                                     content=Container(
                                     margin=10,
@@ -683,9 +692,9 @@ class Dowloader_app:
                                     shadow=BoxShadow(
                                             spread_radius=1,
                                             blur_radius=3,
-                                            offset=Offset(-6, 8),
+                                            offset=Offset(-3, 4),
                                             blur_style=ShadowBlurStyle.NORMAL,
-                                            color="#084107"
+                                            color="#350430"
                                             )
                             
                             )
@@ -746,7 +755,7 @@ class Dowloader_app:
                         self.songs_list.controls.append(
                             Container(
                                 height=110,
-                                margin=10,
+                                margin=flet.margin.only(left=85, right=85),
                                 padding=-7,
                                     content=Container(
                                     margin=10,
@@ -820,7 +829,7 @@ class Dowloader_app:
                                             blur_radius=3,
                                             offset=Offset(-6, 8),
                                             blur_style=ShadowBlurStyle.NORMAL,
-                                            color="#084107"
+                                            color="#5c1054"
                                             )
                             )
                         )
@@ -861,7 +870,7 @@ class Dowloader_app:
 
         # si esta en True me inicia el programa
         if self.downloader_2.conexion_wifi:
-            self.page.add(self.container_1)
+            self.page.add(self.container_bground)
 
             """
             si esta en False se iniciara el programa igualmente pero con la funcion que muestra la alerta de conexion de wifi.
@@ -869,7 +878,7 @@ class Dowloader_app:
             me mostrara la alerta de coneccion etablecida y la idea es que no me muestre nada si ya esta la coneccion
             """
         else:
-            self.page.add(self.container_1)
+            self.page.add(self.container_bground)
             self.dialog_check_wifi_initial()
         self.page.update()
 
