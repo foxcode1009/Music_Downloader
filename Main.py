@@ -7,8 +7,6 @@ import requests
 
 from flet import(
     Container,
-    LinearGradient,
-    alignment,
     Column,
     TextField,
     Row,
@@ -31,7 +29,8 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
-    Margin
+    Audio,
+    Window
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -43,7 +42,7 @@ class Cancion:
         self.link = link
         self.author = ""
         self.end_time = ""
-        self.title = str("")
+        self.title = ""
         self.miniatura_path = ""
         self.conexion_wifi = True
         self.exist_file = True
@@ -235,6 +234,19 @@ class Dowloader_app:
     def __init__(self, page):
         self.page = page
 
+
+        # este es el tamaño inicial del programa
+        self.page.window.width = 1050
+        self.page.window.height = 630
+
+        # icono de la ventana
+        self.page.window.icon = r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\musica.ico"
+        self.page.title = "Music Downloader"
+
+        # la ventana se mostrara en el centro de la pantalla
+        self.page.window.center()
+        self.page.update()
+
         # entrada del link
         self.input_text = TextField(
                                     label="Paste link",
@@ -272,14 +284,6 @@ class Dowloader_app:
                                             bgcolor="white",
                                             on_click=self.download_song_UI
         )
-
-        # este es el tamaño inicial del programa
-        self.page.window.width = 1050
-        self.page.window.height = 630
-
-        # la ventana se mostrara en el centro de la pantalla
-        self.page.window.center()
-        self.page.update()
 
         # icono de check
         self.icon_dwlad_check = Icon(
@@ -541,6 +545,14 @@ class Dowloader_app:
         progressbar.value = 0
         self.page.update()
 
+         # numero de progreso de descarga
+        num_progress = Text(
+            selectable=True,
+            weight=FontWeight.W_500,
+            color="black",
+            size=14
+        )
+
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
 
@@ -566,14 +578,6 @@ class Dowloader_app:
             self.icon_check_dialog.open = False
             self.page.update()
 
-        # numero de progreso de descarga
-        num_progress = Text(
-            selectable=True,
-            weight=FontWeight.W_500,
-            color="black",
-            size=14
-        )
-
         # esta funcion se crea con todo el container para darle interactividad a la bara de progreso
         def progress():
             progressbar.visible = True
@@ -583,6 +587,20 @@ class Dowloader_app:
                 num_progress.value = f"{i}%"
                 time.sleep(0.01)
                 self.page.update()
+
+        
+        def play_music(e):
+            print("play")
+            audio.play()
+            self.page.update()
+
+        def pause_music(e):
+            print("play")
+            audio.pause()
+            self.page.update()
+
+        # button_play = IconButton(icons.PLAY_CIRCLE_OUTLINE, on_click=play_music)
+        # button_pause = IconButton(icons.PAUSE_CIRCLE_OUTLINE_ROUNDED, on_click=pause_music)
 
         # condicional para confirmar que si se introdujo el link el tipo de archivo y resolucion
         if not self.input_text.value or not self.file_type.value or not self.resolution.value:
@@ -602,6 +620,14 @@ class Dowloader_app:
 
                     # extraer la informacion de la cancion
                     downloader.song_info()
+                    ruta_audio = os.path.expanduser("~\\Music\\"+downloader.title+".mp3")
+                    print(ruta_audio)
+                    audio = Audio(
+                                src=ruta_audio,
+                                autoplay=False
+                            )
+                    self.page.overlay.append(audio)
+                    self.page.update()
 
                     if not downloader.error:
 
@@ -695,7 +721,8 @@ class Dowloader_app:
                                             content=Row(
                                             controls=[
                                                         # boton para reproducir la cancion o video, aun sin funcionalidad
-                                                        IconButton(icons.PLAY_CIRCLE_OUTLINE),
+                                                        IconButton(icons.PLAY_CIRCLE_OUTLINE, on_click=play_music()),
+                                                        IconButton(icons.PAUSE_CIRCLE_OUTLINE_ROUNDED, on_click=pause_music()),
                                                         Column(width=10)
                                                     ],
                                                     alignment=flet.MainAxisAlignment.END
@@ -830,7 +857,7 @@ class Dowloader_app:
                                         ),
                                         Container(
                                             expand=True,
-                                            content=Row(
+                                            content=Column(
                                             controls=[
                                                         IconButton(icons.PLAY_CIRCLE_OUTLINE),
                                                         Column(width=10)
