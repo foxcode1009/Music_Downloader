@@ -4,6 +4,7 @@ import os
 import flet
 import time
 import requests
+from pathlib import Path
 
 from flet import(
     Container,
@@ -233,11 +234,12 @@ class Dowloader_app:
 
     def __init__(self, page):
         self.page = page
+        self.ruta_audio = None
 
 
         # este es el tamaño inicial del programa
-        self.page.window.width = 1050
-        self.page.window.height = 630
+        self.page.window.width = 1094
+        self.page.window.height = 640
 
         # icono de la ventana
         self.page.window.icon = r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\musica.ico"
@@ -436,7 +438,6 @@ class Dowloader_app:
         """
         self.downloader_2 = Cancion(self.input_text.value)
 
-    
     def page_update(self, e):
         self.Download_button.disabled = False
         self.page.update()
@@ -543,7 +544,12 @@ class Dowloader_app:
         progressbar = ProgressBar(width=300)
         progressbar.visible = False
         progressbar.value = 0
-        self.page.update()
+        ruta = None
+
+        audio = Audio(
+            src="",
+            autoplay=False
+        )
 
          # numero de progreso de descarga
         num_progress = Text(
@@ -552,6 +558,30 @@ class Dowloader_app:
             color="black",
             size=14
         )
+
+        def play(e):
+            if os.path.exists(ruta):
+                print("-- si existe")
+                print("ingresando a la funcion play")
+                audio.src = Path(ruta)
+                self.page.overlay.append(audio)
+                self.page.update()
+                if audio.src:
+                    print(f"-- valor de el path audio: {audio.src}")
+                    print(f"ruta en play: {ruta}")
+                    audio.play()
+                    self.page.update()
+                    print("saliendo de play")
+                else:
+                    print("-- no se pudo reproducir")
+            elif not os.path.exists(ruta):
+                print("-- no existe")
+
+        def pause(e):
+            print("-- pause")
+            audio.pause()
+            self.page.update()
+            print("-- saliendo de pause")
 
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
@@ -588,17 +618,6 @@ class Dowloader_app:
                 time.sleep(0.01)
                 self.page.update()
 
-        
-        def play_music(e):
-            print("play")
-            audio.play()
-            self.page.update()
-
-        def pause_music(e):
-            print("play")
-            audio.pause()
-            self.page.update()
-
         # button_play = IconButton(icons.PLAY_CIRCLE_OUTLINE, on_click=play_music)
         # button_pause = IconButton(icons.PAUSE_CIRCLE_OUTLINE_ROUNDED, on_click=pause_music)
 
@@ -620,14 +639,11 @@ class Dowloader_app:
 
                     # extraer la informacion de la cancion
                     downloader.song_info()
-                    ruta_audio = os.path.expanduser("~\\Music\\"+downloader.title+".mp3")
-                    print(ruta_audio)
-                    audio = Audio(
-                                src=ruta_audio,
-                                autoplay=False
-                            )
-                    self.page.overlay.append(audio)
-                    self.page.update()
+
+                    title_join = downloader.title+".mp3"
+                    path_join = os.path.expanduser("~\\Music\\")
+                    ruta = os.path.join(path_join, title_join)
+                    print(f"-- ruta final en dounloader: {ruta}")
 
                     if not downloader.error:
 
@@ -720,9 +736,9 @@ class Dowloader_app:
                                             expand=True,
                                             content=Row(
                                             controls=[
-                                                        # boton para reproducir la cancion o video, aun sin funcionalidad
-                                                        IconButton(icons.PLAY_CIRCLE_OUTLINE, on_click=play_music()),
-                                                        IconButton(icons.PAUSE_CIRCLE_OUTLINE_ROUNDED, on_click=pause_music()),
+                                                        # boton para reproducir la cancion o video, aun sin funcionalidad                                            
+                                                        IconButton(icons.PLAY_CIRCLE_OUTLINE, on_click=play),
+                                                        IconButton(icons.PAUSE_CIRCLE_OUTLINE_ROUNDED, on_click=pause),
                                                         Column(width=10)
                                                     ],
                                                     alignment=flet.MainAxisAlignment.END
@@ -736,9 +752,9 @@ class Dowloader_app:
                                         shadow=BoxShadow(
                                                 spread_radius=1,
                                                 blur_radius=3,
-                                                offset=Offset(-3, 4),
+                                                offset=Offset(-5, 5),
                                                 blur_style=ShadowBlurStyle.NORMAL,
-                                                color="#350430"
+                                                color="#4a235a"
                                                 )
                                 
                                 )
@@ -873,9 +889,9 @@ class Dowloader_app:
                                         shadow=BoxShadow(
                                                 spread_radius=1,
                                                 blur_radius=3,
-                                                offset=Offset(-6, 8),
+                                                offset=Offset(-5, 5),
                                                 blur_style=ShadowBlurStyle.NORMAL,
-                                                color="#350430"
+                                                color="#4a235a"
                                                 )
                                 )
                             )
