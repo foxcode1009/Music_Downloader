@@ -6,6 +6,7 @@ import time
 import requests
 from pathlib import Path
 import uuid
+import playAudio
 
 from flet import(
     Container,
@@ -235,8 +236,8 @@ class Dowloader_app:
 
     def __init__(self, page):
         self.page = page
-        self.ruta_audio = None
-        self.ident_container = None
+        self.path_audio = " "
+        self.ident_container = int
         self.list_container = []
 
 
@@ -433,13 +434,15 @@ class Dowloader_app:
             )
         )
 
-
         """
         la clase cancion se intancia dos veces esta instancia es para poder usarla fuera 
         de la funcion de descargar el video o audio
         ya que si hago una sola instancia para todo no me retorna los valores necesarios
         """
         self.downloader_2 = Cancion(self.input_text.value)
+
+    def return_path(self):
+        return self.path_audio
 
     def page_update(self, e):
         self.Download_button.disabled = False
@@ -548,12 +551,7 @@ class Dowloader_app:
         progressbar = ProgressBar(width=300)
         progressbar.visible = False
         progressbar.value = 0
-        ruta = None
-
-        audio = Audio(
-            src="",
-            autoplay=False
-        )
+        ruta = " "
 
          # numero de progreso de descarga
         num_progress = Text(
@@ -563,30 +561,25 @@ class Dowloader_app:
             size=14
         )
         
-        def play():
-            data = self.ident_container
-            for i in self.list_container:
-                if i[0] == data:
-                    print(f"-- en play: {i[0]}")
-                    audio.src = Path(i[1])
-                    print(f"-- en play ruta : {i[1]}")
-                    print(i[1])
-                    print(f"src: {audio.src}")
-                    print("Reproduciendo...")
-                    self.page.overlay.append(audio)
-                    self.page.update()
-                    audio.play()
-                    self.page.update()
-                    print("-- saliendo de play")
-        
         def get_identificator(e):
             print(f"-- identificador: {self.ident_container}")
-            if self.ident_container is None:
+            if self.ident_container:
                 print(f"-- valor de e {e}")
                 self.ident_container = e
                 print(f"-- identificador: {self.ident_container}")
                 print(f"-- lista: {self.list_container}")
-                play()
+                
+                for i in self.list_container:
+                    print("-- Ingresando al bucle")
+                    if i[0] == self.ident_container:
+                        print(f"-- id: {i[0]}")
+                        print(f"-- ruta : {i[1]}")
+                        self.path_audio = i[1]
+                        print(f"-- valor de path: {self.path_audio}")
+                        playAudio.play(self.page)
+                    else:
+                        print("-- no esta la cancion en lista")
+
             else:
                 print("-- no ocurrio nada")
 
@@ -920,7 +913,6 @@ class Dowloader_app:
                                     self.input_text.value = ""
                                     self.Download_button.disabled = False
                                     self.page.update()
-                                    # downloader.download_video()
                                 except TypeError:
                                     self.dlg_modal.content(Text("Downloaded not completed"))
                     elif downloader.error:
