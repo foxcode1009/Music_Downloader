@@ -566,13 +566,15 @@ class Dowloader_app:
         def play():
             data = self.ident_container
             for i in self.list_container:
-                if i[0][0][0] == data:
-                    print(f"-- en play: {i[0][0]}")
-                    audio.src = i[0][1]
-                    print(f"-- en play ruta : {i[0][0]}")
+                if i[0] == data:
+                    print(f"-- en play: {i[0]}")
+                    audio.src = Path(i[1])
+                    print(f"-- en play ruta : {i[1]}")
                     print(i[1])
                     print(f"src: {audio.src}")
                     print("Reproduciendo...")
+                    self.page.overlay.append(audio)
+                    self.page.update()
                     audio.play()
                     self.page.update()
                     print("-- saliendo de play")
