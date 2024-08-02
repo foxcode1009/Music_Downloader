@@ -32,7 +32,6 @@ from flet import(
     Icon,
     BottomSheet,
     Audio,
-    Window
 )
 
 # clase de la cancion, recive un atributo que es el link
