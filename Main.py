@@ -284,7 +284,8 @@ class Dowloader_app:
                                             icon_color="#0B440A",
                                             color="#107D0E",
                                             bgcolor="white",
-                                            on_click=self.download_song_UI
+                                            on_click=self.download_song_UI,
+                                            tooltip="Download song"
         )
 
         # icono de check
@@ -298,6 +299,7 @@ class Dowloader_app:
         # esto es una cascada de opciones para escoger audio o video
         self.file_type = Dropdown(
             label="File type",
+            tooltip="Select download type",
             width=110,
             height=50,
             border_color="#107D0E",
@@ -312,6 +314,7 @@ class Dowloader_app:
         # esta es la cascada de opciones para escoger la calidad del video, aun sin funcionalidad
         self.resolution = Dropdown(
             label="Resolution",
+            tooltip="Select resolution type",
             width=121,
             height=50,
             border_color="#107D0E",
@@ -437,6 +440,42 @@ class Dowloader_app:
         """
         self.downloader_2 = Cancion(self.input_text.value)
 
+    def play_song(self):
+        print("### Funcion play_song ###")
+        data = self.ident_container
+        for i in self.list_container:
+            print("  -- Ingresando al bucle")
+            print(f"  variable data {data}")
+            print("  imprimiendo i: ", i)
+            if i[0] == data:
+                self.path_audio = i[1]
+                print(f"  valor de: path {self.path_audio}")
+
+                print("  -- Antes de la variable audio")
+                self.audio = Audio(
+                        src=Path(self.path_audio),
+                        autoplay=False
+                    )
+                print("  -- Antes de agregar audio a page en play ")
+                self.page.overlay.append(self.audio)
+                self.page.update()
+                print("  -- widget audio agregado")
+                print("  -- reproduciendo en play...")
+                self.audio.play()
+                self.page.update()
+                print("  -- saliendo de reproduccion en play <-")
+                self.ident_container = int
+                self.path_audio = " "
+            else:
+                print("-- no esta la cancion en lista")
+    
+    def pause(self, e):
+        # self.audio.autoplay = False
+        self.audio.pause()
+        self.page.update()
+        print(self.audio.autoplay)
+        print("-- saliendo de pause")
+
     def page_update(self, e):
         self.Download_button.disabled = False
         self.page.update()
@@ -553,6 +592,21 @@ class Dowloader_app:
             color="black",
             size=14
         )
+        
+        def get_identificator(e):
+            print("  ### Funcion identificator ###")
+            print(f"    -- identificador: {self.ident_container}")
+            if self.ident_container:
+                print(f"    -- valor de e {e}")
+                self.ident_container = e
+                print(f"    -- identificador: {self.ident_container}")
+                print(f"    -- lista: {self.list_container}")
+                print("    -- saliendo de get _identificator")
+                self.play_song()
+            else:
+                print("    -- no ocurrio nada")
+
+            
 
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
@@ -659,9 +713,8 @@ class Dowloader_app:
                                                         width=200,
                                                         height=110
                                                     ),
-
-                                                    border_radius=15
-                                                ),
+                                            border_radius=15
+                                        ),
                                         Column(
                                             controls=[
                                             Container(
@@ -703,9 +756,30 @@ class Dowloader_app:
                                                         num_progress
                                                     ],
                                                 )
-                                            ]
+                                        ]
                                         ),
-                                    ],
+                                        Container(
+                                            expand=True,
+                                            content=Row(
+                                                controls=[
+                                                        IconButton(
+                                                                icon=icons.PLAY_CIRCLE_OUTLINE,
+                                                                # on_click=lambda x: get_identificator(x.control.data),
+                                                                data=code,
+                                                                tooltip="In process"
+                                                                ),
+                                                        IconButton(
+                                                                icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
+                                                                data=code,
+                                                                # on_click=self.pause,
+                                                                tooltip="In process"
+                                                                ),
+                                                        Column(width=10),
+                                                        ],
+                                                        alignment=flet.MainAxisAlignment.END
+                                                        )
+                                                    )
+                                                ],
                                                 )
                                             ),
                                         bgcolor="white",
@@ -830,9 +904,30 @@ class Dowloader_app:
                                                         num_progress
                                                     ],
                                                 )
-                                            ]
+                                        ]
                                         ),
-                                    ],
+                                        Container(
+                                            expand=True,
+                                            content=Column(
+                                            controls=[
+                                                      IconButton(
+                                                                icon=icons.PLAY_CIRCLE_OUTLINE,
+                                                                # on_click=lambda x: get_identificator(x.control.data),
+                                                                data=code,
+                                                                tooltip="In process"
+                                                                ),
+                                                        IconButton(
+                                                                icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
+                                                                data=code,
+                                                                # on_click=self.pause,
+                                                                tooltip="In process"
+                                                                ),
+                                                        Column(width=10),
+                                                    ],
+                                                    alignment=flet.MainAxisAlignment.END
+                                                        )
+                                                    )
+                                                ],
                                                 )
                                             ),
                                         bgcolor="white",
@@ -844,8 +939,8 @@ class Dowloader_app:
                                                 blur_style=ShadowBlurStyle.NORMAL,
                                                 color="#4a235a"
                                                 )
-                                            )
-                                        )
+                                )
+                            )
                             progress()
                             self.page.update()
                             if downloader.title and downloader.author and downloader.end_time:
