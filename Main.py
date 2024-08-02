@@ -6,7 +6,6 @@ import time
 import requests
 from pathlib import Path
 import uuid
-import playAudio
 
 from flet import(
     Container,
@@ -154,10 +153,6 @@ class Cancion:
     def video_info(self):
 
         yt = YouTube(self.link)
-
-        
-        
-
         try:
 
             # titulo
@@ -239,6 +234,7 @@ class Dowloader_app:
         self.path_audio = " "
         self.ident_container = int
         self.list_container = []
+        self.audio = ""
 
 
         # este es el tamaño inicial del programa
@@ -441,8 +437,41 @@ class Dowloader_app:
         """
         self.downloader_2 = Cancion(self.input_text.value)
 
-    def return_path(self):
-        return self.path_audio
+    def play_song(self):
+        print("### Funcion play_song ###")
+        data = self.ident_container
+        for i in self.list_container:
+            print("  -- Ingresando al bucle")
+            print(f"  variable data {data}")
+            print("  imprimiendo i: ", i)
+            if i[0] == data:
+                self.path_audio = i[1]
+                print(f"  valor de: path {self.path_audio}")
+
+                print("  -- Antes de la variable audio")
+                self.audio = Audio(
+                        src=Path(self.path_audio),
+                        autoplay=False
+                    )
+                print("  -- Antes de agregar audio a page en play ")
+                self.page.overlay.append(self.audio)
+                self.page.update()
+                print("  -- widget audio agregado")
+                print("  -- reproduciendo en play...")
+                self.audio.play()
+                self.page.update()
+                print("  -- saliendo de reproduccion en play <-")
+                self.ident_container = int
+                self.path_audio = " "
+            else:
+                print("-- no esta la cancion en lista")
+    
+    def pause(self, e):
+        # self.audio.autoplay = False
+        self.audio.pause()
+        self.page.update()
+        print(self.audio.autoplay)
+        print("-- saliendo de pause")
 
     def page_update(self, e):
         self.Download_button.disabled = False
@@ -562,26 +591,17 @@ class Dowloader_app:
         )
         
         def get_identificator(e):
-            print(f"-- identificador: {self.ident_container}")
+            print("  ### Funcion identificator ###")
+            print(f"    -- identificador: {self.ident_container}")
             if self.ident_container:
-                print(f"-- valor de e {e}")
+                print(f"    -- valor de e {e}")
                 self.ident_container = e
-                print(f"-- identificador: {self.ident_container}")
-                print(f"-- lista: {self.list_container}")
-                
-                for i in self.list_container:
-                    print("-- Ingresando al bucle")
-                    if i[0] == self.ident_container:
-                        print(f"-- id: {i[0]}")
-                        print(f"-- ruta : {i[1]}")
-                        self.path_audio = i[1]
-                        print(f"-- valor de path: {self.path_audio}")
-                        playAudio.play(self.page)
-                    else:
-                        print("-- no esta la cancion en lista")
-
+                print(f"    -- identificador: {self.ident_container}")
+                print(f"    -- lista: {self.list_container}")
+                print("    -- saliendo de get _identificator")
+                self.play_song()
             else:
-                print("-- no ocurrio nada")
+                print("    -- no ocurrio nada")
 
             
 
@@ -739,6 +759,7 @@ class Dowloader_app:
                                             expand=True,
                                             content=Row(
                                                 controls=[
+                                                    
                                                         IconButton(
                                                                 icon=icons.PLAY_CIRCLE_OUTLINE,
                                                                 on_click=lambda x: get_identificator(x.control.data),
@@ -746,7 +767,8 @@ class Dowloader_app:
                                                                 ),
                                                         IconButton(
                                                                 icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
-                                                                data=code
+                                                                data=code,
+                                                                on_click=self.pause
                                                                 ),
                                                         Column(width=10),
                                                         ],
@@ -761,9 +783,9 @@ class Dowloader_app:
                                         shadow=BoxShadow(
                                                 spread_radius=1,
                                                 blur_radius=3,
-                                                offset=Offset(-3, 3),
+                                                offset=Offset(-2, 2),
                                                 blur_style=ShadowBlurStyle.NORMAL,
-                                                color="#4a235a"
+                                                color="#b21aab"
                                                 ),
                                 )
                             )
@@ -947,7 +969,6 @@ class Dowloader_app:
         # si esta en True me inicia el programa
         if self.downloader_2.conexion_wifi:
             self.page.add(self.container_bground)
-
             """
             si esta en False se iniciara el programa igualmente pero con la funcion que muestra la alerta de conexion de wifi.
             lo separe en un condicional ya que si inicio el programa directamente y luego pogo la funcion de alerta de coneccion
