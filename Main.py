@@ -134,7 +134,6 @@ class Cancion:
                     # crear el archivo de la imagen
                     with open(self.miniatura_path, 'wb') as file:
                         file.write(download.content)
-                    os.chdir
 
                 if os.path.exists(download_foulder):
 
@@ -576,8 +575,8 @@ class Dowloader_app:
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
 
-            # self.page.overlay.append(self.icon_check_dialog)
             self.page.overlay.append(self.icon_check_dialog)
+
             self.icon_check_dialog.open = True
             self.page.update()
 
@@ -589,13 +588,14 @@ class Dowloader_app:
 
         # este es el check de descarga del video
         def open_icon_check_video():
-
+            print("ingresando a la funcion icon check")
             self.page.overlay.apend(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
             # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
             # descargara el video, cuando termine la descarga desaparece el check
             downloader.download_video()
+            print("desppues de dowmoad")
             self.icon_check_dialog.open = False
             self.page.update()
 
