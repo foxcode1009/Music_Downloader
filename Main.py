@@ -607,11 +607,11 @@ class Dowloader_app:
 
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
-
+            print("ingresando a check wifi")
             self.page.overlay.append(self.icon_check_dialog)
-
             self.icon_check_dialog.open = True
             self.page.update()
+            print("saliendo de check wifi")
 
             # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
             #  descargara el audio, cuando termine la descarga desaparece el check
