@@ -31,6 +31,8 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
+    LinearGradient,
+    alignment
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -402,12 +404,18 @@ class Dowloader_app:
         )
 
         self.container_bground = Container(
+            bgcolor="#40cf23",
             content=self.container_1,
             image_src=r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\bground_lofi.jpg",
             image_fit="FILL",
             expand=True,
             height=self.page.height,
-            margin=-10
+            margin=-10,
+            gradient=LinearGradient(
+                begin=alignment.center_right,
+                end=alignment.top_left,
+                colors=["#1B1427", "#2E2142", "#412E5D"]
+            )
         )
 
         # alerta de error
