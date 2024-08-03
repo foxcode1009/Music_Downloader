@@ -6,7 +6,6 @@ import time
 import requests
 from pathlib import Path
 import uuid
-import shutil
 
 from flet import(
     Container,
@@ -32,7 +31,8 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
-    OutlinedButton,
+    Audio,
+    Window
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -299,11 +299,11 @@ class Dowloader_app:
         # esto es una cascada de opciones para escoger audio o video
         self.file_type = Dropdown(
             label="File type",
-            tooltip="Select download type",
             width=110,
             height=50,
             border_color="#107D0E",
             bgcolor="white",
+            tooltip="Download song",
             border_radius=15,
             options=[
                 dropdown.Option("Audio"),
@@ -314,12 +314,12 @@ class Dowloader_app:
         # esta es la cascada de opciones para escoger la calidad del video, aun sin funcionalidad
         self.resolution = Dropdown(
             label="Resolution",
-            tooltip="Select resolution type",
             width=121,
             height=50,
             border_color="#107D0E",
             bgcolor="white",
             border_radius=15,
+            tooltip="Download song",
             options=[
                 dropdown.Option("high"),
                 dropdown.Option("Middle"),
@@ -433,17 +433,6 @@ class Dowloader_app:
             )
         )
 
-        self.confirm_dialog = AlertDialog(
-        modal=True,
-        title=Text("Please confirm", weight=FontWeight.W_600, size=24),
-        content=Text("Do you really want to exit this app?",  weight=FontWeight.W_500, size=20),
-        actions=[
-            ElevatedButton("Yes", on_click=self.yes_click),
-            OutlinedButton("No", on_click=self.no_click),
-        ],
-        actions_alignment=MainAxisAlignment.END,
-    )
-        
         """
         la clase cancion se intancia dos veces esta instancia es para poder usarla fuera 
         de la funcion de descargar el video o audio
@@ -451,27 +440,43 @@ class Dowloader_app:
         """
         self.downloader_2 = Cancion(self.input_text.value)
 
-        self.page.window.prevent_close = True
-        self.page.window.on_event = self.event
+    """
+    def play_song(self):
+        print("### Funcion play_song ###")
+        data = self.ident_container
+        for i in self.list_container:
+            print("  -- Ingresando al bucle")
+            print(f"  variable data {data}")
+            print("  imprimiendo i: ", i)
+            if i[0] == data:
+                self.path_audio = i[1]
+                print(f"  valor de: path {self.path_audio}")
 
-    def yes_click(self, e):
-        if os.path.exists(os.path.expanduser("~\\Downloads\\Download_images")):
-            shutil.rmtree(os.path.expanduser("~\\Downloads\\Download_images\\"))
-        self.page.window.destroy()
-        
-
-    def no_click(self, e):
-        self.confirm_dialog.open = False
+                print("  -- Antes de la variable audio")
+                self.audio = Audio(
+                        src=Path(self.path_audio),
+                        autoplay=False
+                    )
+                print("  -- Antes de agregar audio a page en play ")
+                self.page.overlay.append(self.audio)
+                self.page.update()
+                print("  -- widget audio agregado")
+                print("  -- reproduciendo en play...")
+                self.audio.play()
+                self.page.update()
+                print("  -- saliendo de reproduccion en play <-")
+                self.ident_container = int
+                self.path_audio = " "
+            else:
+                print("-- no esta la cancion en lista")
+    """
+    
+    def pause(self, e):
+        # self.audio.autoplay = False
+        self.audio.pause()
         self.page.update()
-
-    def event(self, e):
-        print("entrando a la funcion")
-        if e.data == "close":
-            print("entrando al if")
-            self.page.overlay.append(self.confirm_dialog)
-            self.confirm_dialog.open = True
-            self.page.update()
-
+        print(self.audio.autoplay)
+        print("-- saliendo de pause")
 
     def page_update(self, e):
         self.Download_button.disabled = False
@@ -589,7 +594,6 @@ class Dowloader_app:
             color="black",
             size=14
         )
-
         """
         def get_identificator(e):
             print("  ### Funcion identificator ###")
@@ -607,11 +611,10 @@ class Dowloader_app:
 
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
-            print("ingresando a check wifi")
+
             self.page.overlay.append(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
-            print("saliendo de check wifi")
 
             # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
             #  descargara el audio, cuando termine la descarga desaparece el check
@@ -621,14 +624,13 @@ class Dowloader_app:
 
         # este es el check de descarga del video
         def open_icon_check_video():
-            print("ingresando a la funcion icon check")
-            self.page.overlay.apend(self.icon_check_dialog)
+
+            self.page.overlay.append(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
             # cuando se muestra el check de descarga se inicia la descarga y en medio de eso
             # descargara el video, cuando termine la descarga desaparece el check
             downloader.download_video()
-            print("desppues de dowmoad")
             self.icon_check_dialog.open = False
             self.page.update()
 
@@ -667,6 +669,7 @@ class Dowloader_app:
                     title_join = downloader.title+".mp3"
                     path_join = os.path.expanduser("~\\Music\\")
                     ruta = os.path.join(path_join, title_join)
+                    print(f"-- ruta final en dounloader: {ruta}")
 
                     if not downloader.error:
 
@@ -676,6 +679,7 @@ class Dowloader_app:
                             self.open_dialog()
                             self.page.update()
                         elif not downloader.exist_file:
+                            print("-- Ingresando a crear el container")
 
                             # se extrae la ruta para la miniatura del video
                             path = downloader.miniatura_path
@@ -759,17 +763,18 @@ class Dowloader_app:
                                             expand=True,
                                             content=Row(
                                                 controls=[
+                                                    
                                                         IconButton(
                                                                 icon=icons.PLAY_CIRCLE_OUTLINE,
                                                                 # on_click=lambda x: get_identificator(x.control.data),
-                                                                data=code,
-                                                                tooltip="In process"
+                                                                tooltip="In proces",
+                                                                data=code
                                                                 ),
                                                         IconButton(
                                                                 icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
                                                                 data=code,
-                                                                # on_click=self.pause,
-                                                                tooltip="In process"
+                                                                tooltip="In proces",
+                                                                on_click=self.pause
                                                                 ),
                                                         Column(width=10),
                                                         ],
@@ -791,6 +796,7 @@ class Dowloader_app:
                                 )
                             )
                             self.page.update()
+                            print("-- Despues de crear el container")
                             # se llama la funcion de barra de progrso 
                             progress()
                             self.page.update()
@@ -803,6 +809,7 @@ class Dowloader_app:
                                     open_icon_check_audio()
                                     self.input_text.value = ""
                                     self.Download_button.disabled = False
+                                    print("-- despues de descargar")
                                     self.page.update()
                                 except TypeError:
                                     # si ocurre algun error me muestra la alerta
@@ -902,19 +909,19 @@ class Dowloader_app:
                                         ),
                                         Container(
                                             expand=True,
-                                            content=Column(
+                                            content=Row(
                                             controls=[
-                                                      IconButton(
+                                                        IconButton(
                                                                 icon=icons.PLAY_CIRCLE_OUTLINE,
                                                                 # on_click=lambda x: get_identificator(x.control.data),
-                                                                data=code,
-                                                                tooltip="In process"
+                                                                tooltip="In proces",
+                                                                data=code
                                                                 ),
                                                         IconButton(
                                                                 icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
                                                                 data=code,
-                                                                # on_click=self.pause,
-                                                                tooltip="In process"
+                                                                tooltip="In proces",
+                                                                # on_click=self.pause
                                                                 ),
                                                         Column(width=10),
                                                     ],
@@ -964,6 +971,7 @@ class Dowloader_app:
             elif not downloader.conexion_wifi:
                 self.dialog_check_wifi_in_progress()
         self.list_container.append((code, ruta))
+        print(f"-- lista: {self.list_container}")
         self.Download_button.disabled = False
         self.page.update()
 
