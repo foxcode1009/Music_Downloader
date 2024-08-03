@@ -31,8 +31,6 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
-    Audio,
-    Window
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -49,6 +47,8 @@ class Cancion:
         self.conexion_wifi = True
         self.exist_file = True
         self.error = False
+        self.exist_file_video = True
+        self.error_video = False
 
         # funcion para descargar el audio
     def download_song_only_audio(self):
@@ -62,6 +62,7 @@ class Cancion:
         try:
             # descargar la cancion 
             audio.download(output_path=file_path, mp3=True)
+            self.error = False
         except:
             self.error = True
 
@@ -91,8 +92,9 @@ class Cancion:
             file_name = video.default_filename
             if os.path.exists(os.path.expanduser("~\\Videos\\"+file_name)):
                 os.rename(os.path.expanduser("~\\Videos\\"+file_name), os.path.expanduser("~\\Videos\\"+self.title+".mp4"))
+            self.error_video = False
         except:
-            self.error = True
+            self.error_video = True
         
     # esta funcioon extrae toda la informacion de la cancion antes de descargar el audio
     def song_info(self):
@@ -147,7 +149,7 @@ class Cancion:
                     self.exist_file = False
 
                 # cambiar el valor de la variable a False para que agregue el contenido a la pantalla y luuego se descargue
-                self.error = False
+                self.exist_file = False
                 print("despues de los false")
         except:
             print("en el except")
@@ -164,9 +166,11 @@ class Cancion:
             self.title = str(yt.title)
             # si existe el archivo no cambia la variable exist_file y la deja en true
             if os.path.exists(os.path.expanduser("~\\Videos\\"+self.title+".mp4")):
-                self.exist_file = True
+                print("Existe")
+                self.exist_file_video = True
             # si no existe el archivo se extrae la infomacion 
             elif not os.path.exists(os.path.expanduser("~\\Videos\\"+self.title+".mp4")):
+                print("No existe")
                 # auto 
                 self.author = yt.author
                 # audio = yt.streams.get_audio_only()
@@ -188,6 +192,7 @@ class Cancion:
                     os.mkdir(download_foulder)
                     # ruta final para guardar se une con el nombre de la cancion
                     self.miniatura_path = os.path.join(download_foulder, f"{self.title}.png")
+                    self.exist_file_video = False
 
                     # crear el archivo de la imagen
                     with open(self.miniatura_path, 'wb') as file:
@@ -199,10 +204,10 @@ class Cancion:
                     # crear el archivo de la imagen
                     with open(self.miniatura_path, 'wb') as file:
                         file.write(download.content)
-                self.exist_file = False
-                self.error = False
+                self.exist_file_video = False
         except:
-            self.error = True
+            self.exist_file_video = False
+            self.error_video = True
 
     # funcion para verificar la conexion de wifi
     def check_wifi(self):
@@ -483,8 +488,8 @@ class Dowloader_app:
         print("-- saliendo de pause")
 
     def page_update(self, e):
-        self.Download_button.disabled = False
-        self.page.update()
+        
+        self.page.add()
 
     # funcion para abrir el dialogo
     def open_dialog(self):
@@ -810,8 +815,9 @@ class Dowloader_app:
                                 self.page.update()
                                 self.list_container.append((code, ruta))
                                 print(f"-- lista: {self.list_container}")
-                                self.Download_button.disabled = False
-                                self.page.update()
+                                if self.Download_button.disabled == True:
+                                    self.Download_button.disabled = False
+                                    self.page.update()
                             except:
                                 print("ocurrio algo")
                                 # si ocurre algun error me muestra la alerta
@@ -844,131 +850,135 @@ class Dowloader_app:
                 try:
 
                     downloader.video_info()
-                    if not downloader.error:
+                    if not downloader.error_video and not downloader.exist_file_video:
 
-                        if downloader.exist_file:
+                        path = downloader.miniatura_path
+                        new_path = path.replace("\\", "/").replace("C:", "")
 
-                            self.dlg_modal.content = Text("Existing file :(", weight=FontWeight.W_500, size=20)
-                            self.open_dialog()
-                            self.page.update()
+                        self.songs_list.controls.append(
+                            Container(
+                                height=110,
+                                margin=flet.margin.only(left=85, right=85),
+                                padding=-7,
+                                    content=Container(
+                                    margin=10,
+                                    content=Row(
+                                    controls=[
+                                        Container(
+                                        bgcolor="red",
+                                        width=155,
+                                        height=95,
+                                        content=Image(
+                                                    src=new_path,
+                                                    fit=ImageFit.FILL,
+                                                    width=200,
+                                                    height=110
+                                                ),
+                                        border_radius=15
+                                    ),
+                                    Column(
+                                        controls=[
+                                        Container(
+                                            width=600,
+                                            content=Text(
+                                                    value=downloader.title,
+                                                    selectable=True,
+                                                    weight=FontWeight.W_700,
+                                                    color="black",
+                                                    size=23
 
-                        elif not downloader.exist_file:
-                            path = downloader.miniatura_path
-                            new_path = path.replace("\\", "/").replace("C:", "")
-
-                            self.songs_list.controls.append(
-                                Container(
-                                    height=110,
-                                    margin=flet.margin.only(left=85, right=85),
-                                    padding=-7,
-                                        content=Container(
-                                        margin=10,
+                                            ),
+                                        ),
+                                        Row(
+                                            spacing=10,
+                                            controls=[
+                                                    Text(
+                                                        value=downloader.author,
+                                                        selectable=True,
+                                                        weight=FontWeight.W_600,
+                                                        color="black",
+                                                        size=17
+                                                    ),
+                                                    Text(
+                                                        value=downloader.end_time,
+                                                        selectable=True,
+                                                        weight=FontWeight.W_500,
+                                                        color="black",
+                                                        size=14
+                                                    ),
+                                                    progressbar,
+                                                    num_progress
+                                                ],
+                                            )
+                                    ]
+                                    ),
+                                    Container(
+                                        expand=True,
                                         content=Row(
                                         controls=[
-                                            Container(
-                                            bgcolor="red",
-                                            width=155,
-                                            height=95,
-                                            content=Image(
-                                                        src=new_path,
-                                                        fit=ImageFit.FILL,
-                                                        width=200,
-                                                        height=110
-                                                    ),
-                                            border_radius=15
-                                        ),
-                                        Column(
-                                            controls=[
-                                            Container(
-                                                width=600,
-                                                content=Text(
-                                                        value=downloader.title,
-                                                        selectable=True,
-                                                        weight=FontWeight.W_700,
-                                                        color="black",
-                                                        size=23
-
-                                                ),
-                                            ),
-                                            Row(
-                                                spacing=10,
-                                                controls=[
-                                                        Text(
-                                                            value=downloader.author,
-                                                            selectable=True,
-                                                            weight=FontWeight.W_600,
-                                                            color="black",
-                                                            size=17
-                                                        ),
-                                                        Text(
-                                                            value=downloader.end_time,
-                                                            selectable=True,
-                                                            weight=FontWeight.W_500,
-                                                            color="black",
-                                                            size=14
-                                                        ),
-                                                        progressbar,
-                                                        num_progress
-                                                    ],
-                                                )
-                                        ]
-                                        ),
-                                        Container(
-                                            expand=True,
-                                            content=Row(
-                                            controls=[
-                                                        IconButton(
-                                                                icon=icons.PLAY_CIRCLE_OUTLINE,
-                                                                # on_click=lambda x: get_identificator(x.control.data),
-                                                                tooltip="In proces",
-                                                                data=code
-                                                                ),
-                                                        IconButton(
-                                                                icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
-                                                                data=code,
-                                                                tooltip="In proces",
-                                                                # on_click=self.pause
-                                                                ),
-                                                        Column(width=10),
-                                                    ],
-                                                    alignment=flet.MainAxisAlignment.END
-                                                        )
-                                                    )
+                                                    IconButton(
+                                                            icon=icons.PLAY_CIRCLE_OUTLINE,
+                                                            # on_click=lambda x: get_identificator(x.control.data),
+                                                            tooltip="In proces",
+                                                            data=code
+                                                            ),
+                                                    IconButton(
+                                                            icon=icons.PAUSE_CIRCLE_OUTLINE_ROUNDED,
+                                                            data=code,
+                                                            tooltip="In proces",
+                                                            # on_click=self.pause
+                                                            ),
+                                                    Column(width=10),
                                                 ],
+                                                alignment=flet.MainAxisAlignment.END
+                                                    )
                                                 )
-                                            ),
-                                        bgcolor="white",
-                                        border_radius=15,
-                                        shadow=BoxShadow(
-                                                spread_radius=1,
-                                                blur_radius=3,
-                                                offset=Offset(-4, 4),
-                                                blur_style=ShadowBlurStyle.NORMAL,
-                                                color="#4a235a"
-                                                )
-                                )
+                                            ],
+                                            )
+                                        ),
+                                    bgcolor="white",
+                                    border_radius=15,
+                                    shadow=BoxShadow(
+                                            spread_radius=1,
+                                            blur_radius=3,
+                                            offset=Offset(-4, 4),
+                                            blur_style=ShadowBlurStyle.NORMAL,
+                                            color="#4a235a"
+                                            )
                             )
-                            progress()
-                            self.page.update()
-                            if downloader.title and downloader.author and downloader.end_time:
-                                try:
-                                    # esta es la funcion para descargar el video
-                                    open_icon_check_video()
-                                    self.input_text.value = ""
-                                    self.Download_button.disabled = False
-                                    self.page.update()
-                                except TypeError:
-                                    self.dlg_modal.content(Text("Downloaded not completed"))
-                    elif downloader.error:
-                        self.dlg_modal.content = Text("1 Link error", weight=FontWeight.W_500, size=20)
+                        )
+                        progress()
+                        self.page.update()
+                        if downloader.title and downloader.author and downloader.end_time:
+                            try:
+                                # esta es la funcion para descargar el video
+                                open_icon_check_video()
+                                self.input_text.value = ""
+                                self.Download_button.disabled = False
+                                self.page.update()
+                                self.list_container.append((code, ruta))
+                                print(f"-- lista: {self.list_container}")
+                                self.Download_button.disabled = False
+                                self.page.update()
+                            except:
+                                print("ocurrio algo")
+                                # si ocurre algun error me muestra la alerta
+                                self.dlg_modal.content(Text("Downloaded not completed"))
+                                self.open_dialog()
+                                self.page.update()
+                    elif downloader.exist_file_video:
+                        self.dlg_modal.content = Text("Existing file :(", weight=FontWeight.W_500, size=20)
                         self.open_dialog()
-                except :
+                        self.page.update()
+                    elif downloader.error_video:
+                        self.dialog_check_wifi_in_progress()
+                except:
 
                     try:
                         requests.get(downloader.link)
                         # confirm = True
                     except requests.exceptions.MissingSchema:
-                        self.dlg_modal.content = Text("2 Link error", weight=FontWeight.W_500, size=20)
+                        self.dlg_modal.content = Text("Link error", weight=FontWeight.W_500, size=20)
                         self.open_dialog()
                     except requests.ConnectionError:
                         self.dialog_check_wifi_in_progress()
