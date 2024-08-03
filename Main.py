@@ -432,6 +432,17 @@ class Dowloader_app:
                 alignment=flet.MainAxisAlignment.CENTER
             )
         )
+
+        self.confirm_dialog = AlertDialog(
+        modal=True,
+        title=Text("Please confirm", weight=FontWeight.W_600, size=24),
+        content=Text("Do you really want to exit this app?",  weight=FontWeight.W_500, size=20),
+        actions=[
+            ElevatedButton("Yes", on_click=self.yes_click),
+            OutlinedButton("No", on_click=self.no_click),
+        ],
+        actions_alignment=MainAxisAlignment.END,
+    )
         
         """
         la clase cancion se intancia dos veces esta instancia es para poder usarla fuera 
@@ -439,6 +450,28 @@ class Dowloader_app:
         ya que si hago una sola instancia para todo no me retorna los valores necesarios
         """
         self.downloader_2 = Cancion(self.input_text.value)
+
+        self.page.window.prevent_close = True
+        self.page.window.on_event = self.event
+
+    def yes_click(self, e):
+        if os.path.exists(os.path.expanduser("~\\Downloads\\Download_images")):
+            shutil.rmtree(os.path.expanduser("~\\Downloads\\Download_images\\"))
+        self.page.window.destroy()
+        
+
+    def no_click(self, e):
+        self.confirm_dialog.open = False
+        self.page.update()
+
+    def event(self, e):
+        print("entrando a la funcion")
+        if e.data == "close":
+            print("entrando al if")
+            self.page.overlay.append(self.confirm_dialog)
+            self.confirm_dialog.open = True
+            self.page.update()
+
 
     def page_update(self, e):
         self.Download_button.disabled = False
@@ -932,10 +965,6 @@ class Dowloader_app:
                 self.dialog_check_wifi_in_progress()
         self.list_container.append((code, ruta))
         self.Download_button.disabled = False
-        if os.path.exists(os.path.expanduser("~\\Downloads\\Download_images")):
-            shutil.rmtree(os.path.expanduser("~\\Downloads\\Download_images\\"))
-        else:
-            pass
         self.page.update()
 
 
