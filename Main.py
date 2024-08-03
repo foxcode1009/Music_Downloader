@@ -32,7 +32,6 @@ from flet import(
     ProgressBar,
     Icon,
     BottomSheet,
-    Audio,
     OutlinedButton,
 )
 
@@ -457,11 +456,8 @@ class Dowloader_app:
         self.page.window.on_event = self.event
 
     def yes_click(self, e):
-        archivo = os.path.expanduser("~\\Downloads\\Download_images")
         if os.path.exists(os.path.expanduser("~\\Downloads\\Download_images")):
             shutil.rmtree(os.path.expanduser("~\\Downloads\\Download_images\\"))
-        else:
-            pass
         self.page.window.destroy()
         
 
