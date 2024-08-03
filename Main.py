@@ -32,7 +32,7 @@ from flet import(
     Icon,
     BottomSheet,
     LinearGradient,
-    alignment
+    alignment,
 )
 
 # clase de la cancion, recive un atributo que es el link
@@ -253,8 +253,8 @@ class Dowloader_app:
         self.page.window.height = 640
 
         # icono de la ventana
-        self.page.window.icon = r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\musica.ico"
-        self.page.title = "Music Downloader"
+        # self.page.window.icon = r"./musica.ico"
+        # self.page.title = "Music Downloader"
 
         # la ventana se mostrara en el centro de la pantalla
         self.page.window.center()
@@ -406,7 +406,7 @@ class Dowloader_app:
         self.container_bground = Container(
             bgcolor="#40cf23",
             content=self.container_1,
-            image_src=r"C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\bground_lofi.jpg",
+            image_src="bground_lofi.jpg",
             image_fit="FILL",
             expand=True,
             height=self.page.height,
