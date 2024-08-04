@@ -6,7 +6,6 @@ import time
 import requests
 from pathlib import Path
 import uuid
-import sys
 
 from flet import(
     Container,
