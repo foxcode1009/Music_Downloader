@@ -12,6 +12,10 @@ the file type and resolution, then press the download button and a box with the 
 box with the download at the bottom, then a download check is displayed, 
 Just wait for it to disappear to continue with another download.
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1f73b7db62746d13a0963a96c333e9b7d7fdfcf3
 # Estado
 
 Este side project es una practica para mejorar, de igual forma estare 
