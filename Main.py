@@ -247,16 +247,13 @@ class Dowloader_app:
         self.ident_container = int
         self.list_container = []
         self.audio = ""
-        self.image = self.resolver_ruta('assets/bground_lofi.png')
-        self.icon = self.resolver_ruta('assets/musica.ico')
-
 
         # este es el tamaño inicial del programa
         self.page.window.width = 1094
         self.page.window.height = 640
 
         # icono de la ventana
-        self.page.window.icon = self.icon
+        self.page.window.icon = r'C:\Users\divar\Desktop\mis_proyectos\Music_Downloader\assets\musica.ico'
         self.page.title = "Music Downloader"
 
         # la ventana se mostrara en el centro de la pantalla
@@ -410,7 +407,7 @@ class Dowloader_app:
         self.container_bground = Container(
             bgcolor="#40cf23",
             content=self.container_1,
-            image_src=self.image,
+            image_src='bground_lofi.png',
             image_fit="FILL",
             expand=True,
             height=self.page.height,
@@ -491,11 +488,6 @@ class Dowloader_app:
             else:
                 print("-- no esta la cancion en lista")
     """
-    @staticmethod
-    def resolver_ruta(ruta_relativa):
-        if hasattr(sys, '_MEIPASS'):
-            return os.path.join(sys._MEIPASS, ruta_relativa)
-        return os.path.join(os.path.abspath('.'), ruta_relativa)
     
     def pause(self, e):
         # self.audio.autoplay = False
