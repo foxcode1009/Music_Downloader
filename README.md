@@ -12,8 +12,6 @@ the file type and resolution, then press the download button and a box with the 
 box with the download at the bottom, then a download check is displayed, 
 Just wait for it to disappear to continue with another download.
 
-Translated with DeepL.com (free version)
-
 # Estado
 
 Este side project es una practica para mejorar, de igual forma estare 
