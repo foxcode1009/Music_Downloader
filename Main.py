@@ -109,7 +109,6 @@ class Cancion:
 
             # si existe el archivo no cambia la variable exist_file y la deja en true
             if os.path.exists(os.path.expanduser("~\\Music\\"+self.title+".mp3")):
-                print("existe")
                 self.exist_file = True
             # si no existe el archivo se extrae la infomacion 
             elif not os.path.exists(os.path.expanduser("~\\Music\\"+self.title+".mp3")):
@@ -152,9 +151,9 @@ class Cancion:
 
                 # cambiar el valor de la variable a False para que agregue el contenido a la pantalla y luuego se descargue
                 self.exist_file = False
-                print("despues de los false")
+
         except:
-            print("en el except")
+
             self.exist_file = False
             self.error = True
         
@@ -486,14 +485,13 @@ class Dowloader_app:
                 self.path_audio = " "
             else:
                 print("-- no esta la cancion en lista")
-    """
+    
     
     def pause(self, e):
         # self.audio.autoplay = False
         self.audio.pause()
         self.page.update()
-        print(self.audio.autoplay)
-        print("-- saliendo de pause")
+    """
 
     def page_update(self, e):
         
@@ -628,7 +626,7 @@ class Dowloader_app:
 
         # esta funcion muestra un check cuando termina la descarga
         def open_icon_check_audio():
-            print("en icon check")
+
             self.page.overlay.append(self.icon_check_dialog)
             self.icon_check_dialog.open = True
             self.page.update()
@@ -638,7 +636,6 @@ class Dowloader_app:
             downloader.download_song_only_audio()
             self.icon_check_dialog.open = False
             self.page.update()
-            print("saliendo de icon check")
 
         # este es el check de descarga del video
         def open_icon_check_video():
@@ -684,12 +681,10 @@ class Dowloader_app:
                     # extraer la informacion de la cancion
                     downloader.song_info()
                     if not downloader.error and not downloader.exist_file:
-                        print("despues de titulo")
+            
                         title_join = downloader.title+".mp3"
                         path_join = os.path.expanduser("~\\Music\\")
                         ruta = os.path.join(path_join, title_join)
-                        print(f"-- ruta final en downloader: {ruta}")
-                        print("-- Ingresando a crear el container")
 
                         # se extrae la ruta para la miniatura del video
                         path = downloader.miniatura_path
@@ -806,7 +801,6 @@ class Dowloader_app:
                             )
                         )
                         # self.page.update()
-                        print("-- Despues de crear el container")
                         # se llama la funcion de barra de progrso 
                         progress()
                         self.page.update()
@@ -819,15 +813,15 @@ class Dowloader_app:
                                 open_icon_check_audio()
                                 self.input_text.value = ""
                                 self.Download_button.disabled = False
-                                print("-- despues de descargar")
+
                                 self.page.update()
                                 self.list_container.append((code, ruta))
-                                print(f"-- lista: {self.list_container}")
+                            
                                 if self.Download_button.disabled == True:
                                     self.Download_button.disabled = False
                                     self.page.update()
                             except:
-                                print("ocurrio algo")
+
                                 # si ocurre algun error me muestra la alerta
                                 self.dlg_modal.content(Text("Downloaded not completed"))
                                 self.open_dialog()
@@ -839,7 +833,7 @@ class Dowloader_app:
                     elif downloader.error:
                         self.dialog_check_wifi_in_progress()
                 except:
-                    print("ocurrio algo 2")
+
                     try:
                         requests.get(downloader.link)
                         # confirm = True
@@ -965,11 +959,9 @@ class Dowloader_app:
                                 self.Download_button.disabled = False
                                 self.page.update()
                                 self.list_container.append((code, ruta))
-                                print(f"-- lista: {self.list_container}")
                                 self.Download_button.disabled = False
                                 self.page.update()
                             except:
-                                print("ocurrio algo")
                                 # si ocurre algun error me muestra la alerta
                                 self.dlg_modal.content(Text("Downloaded not completed"))
                                 self.open_dialog()
@@ -993,14 +985,10 @@ class Dowloader_app:
 
                 self.page.update()
             elif not downloader.conexion_wifi:
-                print("ocurrio algo 3")
                 self.dialog_check_wifi_in_progress()
-        
-        print(" antes de poner el boton en true")
+
         self.Download_button.disabled = False
         self.page.update()
-        print("saliendo")
-
 
     # metodo para iniciar el programa
     def start(self):
@@ -1027,6 +1015,5 @@ def inicio(page):
     app = Dowloader_app(page)
     app.start()
     page.update()
-    print("inicieando en funcion inicio")
 
 flet.app(target=inicio)
