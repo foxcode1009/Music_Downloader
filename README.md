@@ -1,5 +1,7 @@
 # Downloader Music
 
+## Descripción
+
 Downloader Music es un programa para descargar musica de youtube, tanto videos como audio. 
 Para hacer una descarga simplemente pegamos el link del video o audio que quiere, selecciona
 el tipo de archivo y la resolucio luego se oprime el boton descargar y se mostrara un 
@@ -12,15 +14,8 @@ the file type and resolution, then press the download button and a box with the 
 box with the download at the bottom, then a download check is displayed, 
 Just wait for it to disappear to continue with another download.
 
-<<<<<<< HEAD
-=======
 
-<<<<<<< HEAD
->>>>>>> 1f73b7db62746d13a0963a96c333e9b7d7fdfcf3
-# Estado
-=======
-# Descripción
->>>>>>> e68c4ecf693bba25698763e5eb5100f751df5e01
+## Estado
 
 Este side project es una practica para mejorar, de igual forma estare 
 mejorando algunos aspectos como los botones de reproducir y pausar la 
