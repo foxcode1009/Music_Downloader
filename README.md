@@ -27,6 +27,9 @@ improving some aspects such as the buttons to play and pause the downloaded musi
 downloading music, since they don't have functionality yet, so it's not finished yet. 
 therefore it is not finished yet.
 
+
+## Imagenes
+
 ![imagen del programa](assets/preview.png)
 ![imagen del programa](assets/preview_2.png)
 
