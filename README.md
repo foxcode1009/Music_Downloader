@@ -15,8 +15,12 @@ Just wait for it to disappear to continue with another download.
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
 >>>>>>> 1f73b7db62746d13a0963a96c333e9b7d7fdfcf3
 # Estado
+=======
+# Descripción
+>>>>>>> e68c4ecf693bba25698763e5eb5100f751df5e01
 
 Este side project es una practica para mejorar, de igual forma estare 
 mejorando algunos aspectos como los botones de reproducir y pausar la 
