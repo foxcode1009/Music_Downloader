@@ -13,7 +13,7 @@ box with the download at the bottom, then a download check is displayed,
 Just wait for it to disappear to continue with another download.
 
 
-# Estado
+# Descripción
 
 Este side project es una practica para mejorar, de igual forma estare 
 mejorando algunos aspectos como los botones de reproducir y pausar la 
